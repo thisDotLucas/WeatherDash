@@ -13,7 +13,8 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception{
         Parent root = FXMLLoader.load(getClass().getResource("view/sample.fxml"));
         primaryStage.setTitle("Weather Dash");
-        primaryStage.setScene(new Scene(root, 1200, 810));
+        primaryStage.setResizable(false);
+        primaryStage.setScene(new Scene(root, 1191, 801));
         primaryStage.show();
     }
 
