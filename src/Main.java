@@ -5,6 +5,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import model.Json;
 
+import java.sql.Time;
 import java.util.jar.JarException;
 
 public class Main extends Application {
@@ -20,7 +21,7 @@ public class Main extends Application {
 
 
     public static void main(String[] args) throws JarException {
-        System.out.println(Json.getJson());
+        Json.getJson();
         launch(args);
 
     }
