@@ -119,8 +119,10 @@ public class Controller implements Initializable {
     @FXML
     public void initGraph(){
 
+        chart.getStylesheets().add(getClass().getResource("linechart.css").toString());
         chart.setAnimated(false);
         chart.setLegendVisible(false);
+        chart.setCreateSymbols(false);
 
         OfficialDataHandler officialData = (OfficialDataHandler) json[0];
         SensorDataHandler sensorData = (SensorDataHandler) json[1];
