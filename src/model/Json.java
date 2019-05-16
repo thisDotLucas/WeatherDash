@@ -1,7 +1,6 @@
 package model;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -14,10 +13,11 @@ import org.json.JSONObject;
 public class Json {
 
     public static JSONObject object;
-    private String sourceName;
+
+    public static Object[] data = new Object[2];
 
 
-    public static String getJson() throws JarException {
+    public static Object[] getJson() throws JarException {
         try {
             String url;
             url = "http://weatherdash-api.app.maxemiliang.cloud/sensor/all?token=SecretTokenHello&interval=1";
@@ -109,6 +109,12 @@ public class Json {
                    }
 
                 }
+
+                OfficialDataHandler x = new OfficialDataHandler(officialDataArray);
+                SensorDataHandler y = new SensorDataHandler(sensorDataArray);
+                data[0] = x;
+                data[1] = y;
+
                 int counter = 0;
                 while (officialDataArray[counter + 1] != null){
 
@@ -124,7 +130,7 @@ public class Json {
 
                 }
 
-                return object.toString();
+                return data;
 
            // } else {
              //   throw new JSONException("AlphaVantage API Limit reached");
@@ -134,7 +140,7 @@ public class Json {
             System.out.println(IOException);
         }
 
-        return object.toString();
+        return data;
 
     }
 }

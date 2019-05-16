@@ -88,10 +88,10 @@
                </children></Pane>
             <LineChart fx:id="chart" layoutX="289.0" layoutY="79.0" prefHeight="420.0" prefWidth="902.0" style="-fx-stroke: red;">
               <xAxis>
-                <CategoryAxis side="BOTTOM" />
+                <CategoryAxis fx:id="xAxis" label="Time" side="BOTTOM" />
               </xAxis>
               <yAxis>
-                <NumberAxis side="LEFT" />
+                <NumberAxis fx:id="yAxis" label="Temperature °C" side="LEFT" />
               </yAxis>
             </LineChart>
             <HBox fx:id="sensorHead" alignment="CENTER" layoutX="289.0" layoutY="499.0" prefHeight="54.0" prefWidth="301.0" style="-fx-background-color: #3e50b4;">
