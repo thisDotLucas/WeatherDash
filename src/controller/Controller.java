@@ -15,7 +15,9 @@ import javafx.scene.control.Label;
 import javafx.event.ActionEvent;
 import model.*;
 
+import java.math.RoundingMode;
 import java.net.URL;
+import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.WeekFields;
@@ -146,10 +148,8 @@ public class Controller implements Initializable {
 
         for (int i = 0; i < 24; i++) {
 
-            //System.out.println(officialData.getOfficialDataArray()[i]);
-            series1.getData().add(new XYChart.Data<String, Number>(officialData.formatDate(i, 0), officialData.formatTemp(i)));
-            series2.getData().add(new XYChart.Data<String, Number>(sensorData.formatDate(i, 0), sensorData.formatTemp(i)));
-
+            series1.getData().add(new XYChart.Data<String, Number>(officialData.formatDate(i, formatIndex), officialData.formatTemp(i)));
+            series2.getData().add(new XYChart.Data<String, Number>(sensorData.formatDate(i, formatIndex), sensorData.formatTemp(i)));
 
         }
 
@@ -161,17 +161,17 @@ public class Controller implements Initializable {
 
         OfficialData[] fullArray = dataArray.getOfficialDataArray();
 
-        if(toDo == 0){
+        if (toDo == 0) {
 
             OfficialData[] array = new OfficialData[24];
 
-            for(int i = 0; i < fullArray.length; i++) {
+            for (int i = 0; i < fullArray.length; i++) {
 
                 if (date.equals(fullArray[i].getTimeStamp().substring(0, 10))) {
 
                     int counter = 0;
 
-                    for(int j = i; j < i + 24; j++){
+                    for (int j = i; j < i + 24; j++) {
 
                         OfficialData x = new OfficialData(fullArray[j].getTimeStamp(), dataArray.formatTemp(j).toString(), dataArray.getOfficialDataArray()[j].getSourceName());
                         array[counter] = x;
@@ -183,10 +183,40 @@ public class Controller implements Initializable {
             }
 
             OfficialDataHandler returnable = new OfficialDataHandler(array, array.length);
+
             return returnable;
+
+        } else if (toDo == 1) {
+
+            OfficialData[] array = new OfficialData[7];
+            float averageTemp = 0;
+
+            for (int i = 0; i < fullArray.length; i++) {
+
+                if (date.equals(fullArray[i].getTimeStamp().substring(0, 10))) {
+
+                    int counter = 0;
+
+                    for (int j = i; j < i + 7; j++) {
+
+                        for (int z = 0; z < 24; z++) {
+
+                            averageTemp += Float.parseFloat(dataArray.getOfficialDataArray()[i + (j * 24) + z].getTemperature());
+
+                        }
+
+                        OfficialData x = new OfficialData(fullArray[j].getTimeStamp(), formatTemp(averageTemp).toString(), dataArray.getOfficialDataArray()[j].getSourceName());
+                        array[counter] = x;
+                        averageTemp = 0;
+                        counter++;
+
+                    }
+                    break;
+                }
+
+
+            }
         }
-
-
         return null;
     }
 
@@ -219,6 +249,22 @@ public class Controller implements Initializable {
         }
 
         return null;
+    }
+
+
+
+    public Float formatTemp(float x){
+
+        Float tempToBeFormatted = x;
+
+        NumberFormat formatter = NumberFormat.getInstance(Locale.US);
+        formatter.setMaximumFractionDigits(2);
+        formatter.setMinimumFractionDigits(2);
+        formatter.setRoundingMode(RoundingMode.HALF_UP);
+        Float formatedTemp = new Float(formatter.format(tempToBeFormatted));
+
+        return formatedTemp;
+
     }
 
 
