@@ -68,6 +68,8 @@ public class Controller implements Initializable {
     @FXML
     public void datePickerAction(ActionEvent event) {
 
+        date = datePicker.getValue().toString();
+        chart.getData().clear();
         pickFormat();
         initGraph();
 
@@ -144,6 +146,7 @@ public class Controller implements Initializable {
 
         for (int i = 0; i < 24; i++) {
 
+            //System.out.println(officialData.getOfficialDataArray()[i]);
             series1.getData().add(new XYChart.Data<String, Number>(officialData.formatDate(i, 0), officialData.formatTemp(i)));
             series2.getData().add(new XYChart.Data<String, Number>(sensorData.formatDate(i, 0), sensorData.formatTemp(i)));
 
@@ -156,10 +159,11 @@ public class Controller implements Initializable {
 
     private OfficialDataHandler sort(OfficialDataHandler dataArray, int toDo) {
 
+        OfficialData[] fullArray = dataArray.getOfficialDataArray();
+
         if(toDo == 0){
 
             OfficialData[] array = new OfficialData[24];
-            OfficialData[] fullArray = dataArray.getOfficialDataArray();
 
             for(int i = 0; i < fullArray.length; i++) {
 
@@ -167,9 +171,9 @@ public class Controller implements Initializable {
 
                     int counter = 0;
 
-                    for(int j = i; j < array.length; j++){
+                    for(int j = i; j < i + 24; j++){
 
-                        OfficialData x = new OfficialData(dataArray.formatDate(j, 0), dataArray.formatTemp(j).toString(), dataArray.getOfficialDataArray()[j].getSourceName());
+                        OfficialData x = new OfficialData(fullArray[j].getTimeStamp(), dataArray.formatTemp(j).toString(), dataArray.getOfficialDataArray()[j].getSourceName());
                         array[counter] = x;
                         counter++;
 
@@ -177,6 +181,7 @@ public class Controller implements Initializable {
                     break;
                 }
             }
+
             OfficialDataHandler returnable = new OfficialDataHandler(array, array.length);
             return returnable;
         }
@@ -187,6 +192,31 @@ public class Controller implements Initializable {
 
     private SensorDataHandler sort(SensorDataHandler dataArray, int toDo) {
 
+        SensorData[] fullArray = dataArray.getSensorDataArray();
+
+        if(toDo == 0){
+
+            SensorData[] array = new SensorData[24];
+
+            for(int i = 0; i < i + 24; i++) {
+
+                if (date.equals(fullArray[i].getTimeStamp().substring(0, 10))) {
+
+                    int counter = 0;
+
+                    for(int j = i; j < i + 24; j++){
+
+                        SensorData x = new SensorData(fullArray[j].getTimeStamp(), dataArray.formatTemp(j).toString(), dataArray.getSensorDataArray()[j].getSourceName());
+                        array[counter] = x;
+                        counter++;
+
+                    }
+                    break;
+                }
+            }
+            SensorDataHandler returnable = new SensorDataHandler(array, array.length);
+            return returnable;
+        }
 
         return null;
     }
