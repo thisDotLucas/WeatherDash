@@ -12,10 +12,12 @@ import java.util.Locale;
 public class OfficialDataHandler {
 
     OfficialData[] officialDataArray;
+    int size;
 
-    public OfficialDataHandler(OfficialData[] officialDataArray){
+    public OfficialDataHandler(OfficialData[] officialDataArray, int size){
 
         this.officialDataArray = officialDataArray;
+        this.size = size;
 
     }
 
@@ -82,6 +84,12 @@ public class OfficialDataHandler {
         Float formatedTemp = new Float(formatter.format(tempToBeFormatted));
 
         return formatedTemp;
+
+        }
+
+        public int size(){
+
+            return size;
 
         }
 

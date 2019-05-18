@@ -10,10 +10,12 @@ import java.util.Locale;
 public class SensorDataHandler {
 
     SensorData[] sensorDataArray;
+    int size;
 
-    public SensorDataHandler(SensorData[] sensorDataArray){
+    public SensorDataHandler(SensorData[] sensorDataArray, int size){
 
         this.sensorDataArray = sensorDataArray;
+        this.size = size;
 
     }
 
@@ -78,6 +80,12 @@ public class SensorDataHandler {
         Float formatedTemp = new Float(formatter.format(tempToBeFormatted));
 
         return formatedTemp;
+
+    }
+
+    public int size(){
+
+        return size;
 
     }
 }

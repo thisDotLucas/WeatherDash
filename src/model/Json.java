@@ -110,14 +110,15 @@ public class Json {
 
                 }
 
-                OfficialDataHandler x = new OfficialDataHandler(officialDataArray);
-                SensorDataHandler y = new SensorDataHandler(sensorDataArray);
+                OfficialDataHandler x = new OfficialDataHandler(officialDataArray, officialDataIndex);
+                SensorDataHandler y = new SensorDataHandler(sensorDataArray, sensorDataIndex);
                 data[0] = x;
                 data[1] = y;
 
                 int counter = 0;
                 while (officialDataArray[counter + 1] != null){
 
+                   /*
                     System.out.println(officialDataArray[counter].getSourceName());
                     System.out.println(officialDataArray[counter].getTimeStamp());
                     System.out.println(officialDataArray[counter].getTemperature());
@@ -127,6 +128,8 @@ public class Json {
                     System.out.println(sensorDataArray[counter].getTemperature());
                     System.out.println();
                     counter++;
+                    */
+                   counter++;
 
                 }
 

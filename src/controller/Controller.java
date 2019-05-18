@@ -13,10 +13,7 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 
 import javafx.event.ActionEvent;
-import model.DateAndTime;
-import model.Json;
-import model.OfficialDataHandler;
-import model.SensorDataHandler;
+import model.*;
 
 import java.net.URL;
 import java.time.LocalDate;
@@ -29,8 +26,13 @@ public class Controller implements Initializable {
 
     ObservableList<String> format = FXCollections.observableArrayList("Date", "Week", "Month", "Year");
 
+
     String date;
+    String week;
+    String month;
+    String year;
     Object[] json;
+    int formatIndex;
 
     //Labels
     @FXML
@@ -67,6 +69,7 @@ public class Controller implements Initializable {
     public void datePickerAction(ActionEvent event) {
 
         pickFormat();
+        initGraph();
 
     }
 
@@ -75,6 +78,7 @@ public class Controller implements Initializable {
     public void comboBoxPickerAction(ActionEvent event) {
 
         pickFormat();
+        initGraph();
 
     }
 
@@ -90,26 +94,31 @@ public class Controller implements Initializable {
             //yyyy-MM-dd
             date = localDate.toString();
             headLabel.setText(date);
+            formatIndex = 0;
 
         } else if (showByCombBox.getValue().equals(format.get(1))){ // 1 = Week
 
             //Week number
             WeekFields weekFields = WeekFields.of(Locale.GERMAN);
-            String week = Integer.toString(localDate.get(weekFields.weekOfWeekBasedYear()));
+            week = Integer.toString(localDate.get(weekFields.weekOfWeekBasedYear()));
             headLabel.setText("Week: " + week);
+            formatIndex = 1;
 
         } else if (showByCombBox.getValue().equals(format.get(2))){ // 2 = Month
 
             //Month and year
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH);
             String monthYear = localDate.format(formatter);
+            month = monthYear.substring(0, 4);
             headLabel.setText(monthYear);
+            formatIndex = 2;
 
         } else { // Year
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy");
-            String year = localDate.format(formatter);
+            year = localDate.format(formatter);
             headLabel.setText(year);
+            formatIndex = 3;
 
         }
 
@@ -119,13 +128,16 @@ public class Controller implements Initializable {
     @FXML
     public void initGraph(){
 
+        int laps;
+        int jump;
+
         chart.getStylesheets().add(getClass().getResource("linechart.css").toString());
         chart.setAnimated(false);
         chart.setLegendVisible(false);
         chart.setCreateSymbols(false);
 
-        OfficialDataHandler officialData = (OfficialDataHandler) json[0];
-        SensorDataHandler sensorData = (SensorDataHandler) json[1];
+        OfficialDataHandler officialData = sort((OfficialDataHandler) json[0], formatIndex);
+        SensorDataHandler sensorData = sort((SensorDataHandler) json[1], formatIndex);
 
         XYChart.Series series1 = new XYChart.Series();
         XYChart.Series series2 = new XYChart.Series();
@@ -135,12 +147,49 @@ public class Controller implements Initializable {
             series1.getData().add(new XYChart.Data<String, Number>(officialData.formatDate(i, 0), officialData.formatTemp(i)));
             series2.getData().add(new XYChart.Data<String, Number>(sensorData.formatDate(i, 0), sensorData.formatTemp(i)));
 
+
         }
 
         chart.getData().addAll(series1, series2);
 
     }
 
+    private OfficialDataHandler sort(OfficialDataHandler dataArray, int toDo) {
+
+        if(toDo == 0){
+
+            OfficialData[] array = new OfficialData[24];
+            OfficialData[] fullArray = dataArray.getOfficialDataArray();
+
+            for(int i = 0; i < fullArray.length; i++) {
+
+                if (date.equals(fullArray[i].getTimeStamp().substring(0, 10))) {
+
+                    int counter = 0;
+
+                    for(int j = i; j < array.length; j++){
+
+                        OfficialData x = new OfficialData(dataArray.formatDate(j, 0), dataArray.formatTemp(j).toString(), dataArray.getOfficialDataArray()[j].getSourceName());
+                        array[counter] = x;
+                        counter++;
+
+                    }
+                    break;
+                }
+            }
+            OfficialDataHandler returnable = new OfficialDataHandler(array, array.length);
+            return returnable;
+        }
+
+
+        return null;
+    }
+
+    private SensorDataHandler sort(SensorDataHandler dataArray, int toDo) {
+
+
+        return null;
+    }
 
 
     //At start
@@ -159,13 +208,16 @@ public class Controller implements Initializable {
         model.DateAndTime x = new DateAndTime();
         String currDate = x.getDate();
 
-        initGraph();
-
         headLabel.setText(currDate);
         datePicker.setValue(x.getLoacalDate());
 
         showByCombBox.setValue("Date");
         showByCombBox.setItems(format);
+
+        LocalDate localDate = datePicker.getValue();
+        date = localDate.toString();
+
+        initGraph();
 
     }
 }
