@@ -19,16 +19,19 @@ import java.math.RoundingMode;
 import java.net.URL;
 import java.text.Format;
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.WeekFields;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
 public class Controller implements Initializable {
 
-    ObservableList<String> format = FXCollections.observableArrayList("Date", "Week", "Month", "Year");
+    ObservableList<String> format = FXCollections.observableArrayList("Date", "Week", "Month (N/A)", "Year (N/A)");
 
 
     String date;
@@ -36,7 +39,7 @@ public class Controller implements Initializable {
     String month;
     String year;
     Object[] json;
-    int formatIndex;
+    int formatIndex = 0;
 
     //Labels
     @FXML
@@ -75,7 +78,17 @@ public class Controller implements Initializable {
         date = datePicker.getValue().toString();
         chart.getData().clear();
         pickFormat();
-        initGraph();
+        try {
+
+            initGraph();
+
+        } catch (NullPointerException e){
+
+            weatherTempLabel.setText("N/A");
+            sensorTempLabel.setText("N/A");
+            difTempLabel.setText("N/A");
+
+        }
 
     }
 
@@ -85,7 +98,16 @@ public class Controller implements Initializable {
 
         chart.getData().clear();
         pickFormat();
-        initGraph();
+        try {
+            initGraph();
+        } catch (NullPointerException e){
+
+            weatherTempLabel.setText("N/A");
+            sensorTempLabel.setText("N/A");
+            difTempLabel.setText("N/A");
+
+        }
+
 
     }
 
@@ -101,6 +123,7 @@ public class Controller implements Initializable {
             //yyyy-MM-dd
             date = localDate.toString();
             headLabel.setText(date);
+            xAxis.setLabel("Time");
             formatIndex = 0;
 
         } else if (showByCombBox.getValue().equals(format.get(1))){ // 1 = Week
@@ -109,6 +132,7 @@ public class Controller implements Initializable {
             WeekFields weekFields = WeekFields.of(Locale.GERMAN);
             week = Integer.toString(localDate.get(weekFields.weekOfWeekBasedYear()));
             headLabel.setText("Week: " + week);
+            xAxis.setLabel("Day");
             formatIndex = 1;
 
         } else if (showByCombBox.getValue().equals(format.get(2))){ // 2 = Month
@@ -135,9 +159,6 @@ public class Controller implements Initializable {
     @FXML
     public void initGraph(){
 
-        int laps;
-        int jump;
-
         chart.getStylesheets().add(getClass().getResource("linechart.css").toString());
         chart.setAnimated(false);
         chart.setLegendVisible(false);
@@ -149,7 +170,13 @@ public class Controller implements Initializable {
         XYChart.Series series1 = new XYChart.Series();
         XYChart.Series series2 = new XYChart.Series();
 
+        float officialDataAverage = 0;
+        float sensorDataAverage = 0;
+
         for (int i = 0; i < officialData.size(); i++) {
+
+            officialDataAverage += officialData.formatTemp(i);
+            sensorDataAverage += sensorData.formatTemp(i);
 
             series1.getData().add(new XYChart.Data<String, Number>(officialData.formatDate(i, formatIndex), officialData.formatTemp(i)));
             series2.getData().add(new XYChart.Data<String, Number>(sensorData.formatDate(i, formatIndex), sensorData.formatTemp(i)));
@@ -158,6 +185,16 @@ public class Controller implements Initializable {
 
         chart.getData().addAll(series1, series2);
 
+        weatherTempLabel.setText(String.format("%.01f", officialDataAverage / officialData.size()) + "°C");
+        sensorTempLabel.setText(String.format("%.01f",sensorDataAverage / sensorData.size()) + "°C");
+
+        float difference = (sensorDataAverage / sensorData.size()) - (officialDataAverage / officialData.size());
+
+        if (difference < 0.0)
+            difference = difference * -1;
+
+        difTempLabel.setText(String.format("%.02f", difference) + "°C");
+
     }
 
     private OfficialDataHandler sort(OfficialDataHandler dataArray, int toDo) {
@@ -165,21 +202,27 @@ public class Controller implements Initializable {
         OfficialData[] fullArray = dataArray.getOfficialDataArray();
         OfficialDataHandler returnable;
 
-        if (toDo == 0) {
+        if (toDo == 0) { //date
 
             OfficialData[] array = new OfficialData[24];
+            OfficialData x;
 
             for (int i = 0; i < fullArray.length; i++) {
 
-                if (date.equals(fullArray[i].getTimeStamp().substring(0, 10))) {
+                if (date.equals(fullArray[i].getTimeStamp().substring(0, 10)) && fullArray[i].getTimeStamp().substring(11, 16).equals("00:00")) {
 
-                    int counter = array.length - 1;
+                    int counter = 0;
+                    int diff = 0;
 
                     for (int j = i; j < i + 24; j++) {
 
-                        OfficialData x = new OfficialData(fullArray[j].getTimeStamp(), dataArray.formatTemp(j).toString(), dataArray.getOfficialDataArray()[j].getSourceName());
+                        if (i - diff < 0){
+                            x = new OfficialData(fullArray[0].getTimeStamp(), dataArray.formatTemp(0).toString(), dataArray.getOfficialDataArray()[0].getSourceName());
+                        } else
+                            x = new OfficialData(fullArray[i - diff].getTimeStamp(), dataArray.formatTemp(i - diff).toString(), dataArray.getOfficialDataArray()[i - diff].getSourceName());
                         array[counter] = x;
-                        counter--;
+                        counter++;
+                        diff++;
 
                     }
                     break;
@@ -190,14 +233,15 @@ public class Controller implements Initializable {
 
             return returnable;
 
-        } else if (toDo == 1) {
+        } else if (toDo == 1) { //week
 
             OfficialData[] array = new OfficialData[7];
             float averageTemp = 0;
 
             for (int i = 0; i < fullArray.length; i++) {
 
-                if (date.equals(fullArray[i].getTimeStamp().substring(0, 10))) {
+                if (weekNumber(date).equals(weekNumber(fullArray[i].getTimeStamp().substring(0, 10)))) {
+
 
                     int counter = array.length - 1;
                     int index = i;
@@ -210,7 +254,6 @@ public class Controller implements Initializable {
 
                         }
 
-                        System.out.println(fullArray[index].getTimeStamp());
                         OfficialData x = new OfficialData(toDayName(fullArray[index].getTimeStamp()), formatTemp(averageTemp / 24).toString(), dataArray.getOfficialDataArray()[index].getSourceName());
                         array[counter] = x;
                         averageTemp = 0;
@@ -237,18 +280,25 @@ public class Controller implements Initializable {
         if(toDo == 0){
 
             SensorData[] array = new SensorData[24];
+            SensorData x;
 
             for(int i = 0; i < i + 24; i++) {
 
-                if (date.equals(fullArray[i].getTimeStamp().substring(0, 10))) {
+                if (date.equals(fullArray[i].getTimeStamp().substring(0, 10)) && fullArray[i].getTimeStamp().substring(11, 16).equals("00:00")) {
 
-                    int counter = array.length - 1;
+                    int counter = 0;
+                    int diff = 0;
 
                     for(int j = i; j < i + 24; j++){
 
-                        SensorData x = new SensorData(fullArray[j].getTimeStamp(), dataArray.formatTemp(j).toString(), dataArray.getSensorDataArray()[j].getSourceName());
+                        if (i - diff < 0){
+                            x = new SensorData(fullArray[0].getTimeStamp(), dataArray.formatTemp(0).toString(), dataArray.getSensorDataArray()[0].getSourceName());
+                        } else
+                            x = new SensorData(fullArray[i - diff].getTimeStamp(), dataArray.formatTemp(i - diff).toString(), dataArray.getSensorDataArray()[i - diff].getSourceName());
+
                         array[counter] = x;
-                        counter--;
+                        counter++;
+                        diff++;
 
                     }
                     break;
@@ -256,6 +306,7 @@ public class Controller implements Initializable {
             }
             returnable = new SensorDataHandler(array, array.length);
             return returnable;
+
         } else if (toDo == 1) {
 
             SensorData[] array = new SensorData[7];
@@ -263,7 +314,8 @@ public class Controller implements Initializable {
 
             for (int i = 0; i < fullArray.length; i++) {
 
-                if (date.equals(fullArray[i].getTimeStamp().substring(0, 10))) {
+                //if (weekNumber(date).equals(weekNumber(fullArray[i].getTimeStamp().substring(0, 10))) && toDayName(fullArray[i].getTimeStamp().substring(0, 10)).equals("Sun") && fullArray[i].getTimeStamp().substring(11, 16).equals("00:00")) {
+                if (weekNumber(date).equals(weekNumber(fullArray[i].getTimeStamp().substring(0, 10))) && toDayName(fullArray[i].getTimeStamp().substring(0, 10)).equals("Sun")){
 
                     int counter = array.length - 1;
                     int index = i;
@@ -295,9 +347,36 @@ public class Controller implements Initializable {
 
     private String toDayName(String timeStamp) {
 
+        Date date = null;
 
-        return timeStamp;
+        try {
+            date = new SimpleDateFormat("yyyy-M-d").parse(timeStamp.substring(0, 10));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return new SimpleDateFormat("EEE", Locale.ENGLISH).format(date);
 
+    }
+
+    private String weekNumber(String input){
+
+
+        String dateFormat = "yyyy-MM-dd";
+        Date date;
+        int week = 0;
+
+        SimpleDateFormat df = new SimpleDateFormat(dateFormat);
+
+        try {
+            date = df.parse(input);
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            week = calendar.get(Calendar.WEEK_OF_YEAR);
+            return Integer.toString(week);
+        } catch (Exception e){
+            System.out.println(e);
+        }
+        return "";
     }
 
 

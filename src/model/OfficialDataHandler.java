@@ -39,6 +39,9 @@ public class OfficialDataHandler {
 
         } else if (format == 1) { //Days
 
+            if (dateToBeFormatted.length() < 5)
+                return dateToBeFormatted;
+
             toBeReturned = dateToBeFormatted.substring(0, 10);
 
         } else if (format == 2 || format == 3) { //Weeks or months
