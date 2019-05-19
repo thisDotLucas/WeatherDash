@@ -17,7 +17,9 @@ import model.*;
 
 import java.math.RoundingMode;
 import java.net.URL;
+import java.text.Format;
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.WeekFields;
@@ -81,6 +83,7 @@ public class Controller implements Initializable {
     @FXML
     public void comboBoxPickerAction(ActionEvent event) {
 
+        chart.getData().clear();
         pickFormat();
         initGraph();
 
@@ -146,7 +149,7 @@ public class Controller implements Initializable {
         XYChart.Series series1 = new XYChart.Series();
         XYChart.Series series2 = new XYChart.Series();
 
-        for (int i = 0; i < 24; i++) {
+        for (int i = 0; i < officialData.size(); i++) {
 
             series1.getData().add(new XYChart.Data<String, Number>(officialData.formatDate(i, formatIndex), officialData.formatTemp(i)));
             series2.getData().add(new XYChart.Data<String, Number>(sensorData.formatDate(i, formatIndex), sensorData.formatTemp(i)));
@@ -160,6 +163,7 @@ public class Controller implements Initializable {
     private OfficialDataHandler sort(OfficialDataHandler dataArray, int toDo) {
 
         OfficialData[] fullArray = dataArray.getOfficialDataArray();
+        OfficialDataHandler returnable;
 
         if (toDo == 0) {
 
@@ -169,20 +173,20 @@ public class Controller implements Initializable {
 
                 if (date.equals(fullArray[i].getTimeStamp().substring(0, 10))) {
 
-                    int counter = 0;
+                    int counter = array.length - 1;
 
                     for (int j = i; j < i + 24; j++) {
 
                         OfficialData x = new OfficialData(fullArray[j].getTimeStamp(), dataArray.formatTemp(j).toString(), dataArray.getOfficialDataArray()[j].getSourceName());
                         array[counter] = x;
-                        counter++;
+                        counter--;
 
                     }
                     break;
                 }
             }
 
-            OfficialDataHandler returnable = new OfficialDataHandler(array, array.length);
+            returnable = new OfficialDataHandler(array, array.length);
 
             return returnable;
 
@@ -195,20 +199,23 @@ public class Controller implements Initializable {
 
                 if (date.equals(fullArray[i].getTimeStamp().substring(0, 10))) {
 
-                    int counter = 0;
+                    int counter = array.length - 1;
+                    int index = i;
 
-                    for (int j = i; j < i + 7; j++) {
+                    while (counter >= 0) {
 
                         for (int z = 0; z < 24; z++) {
 
-                            averageTemp += Float.parseFloat(dataArray.getOfficialDataArray()[i + (j * 24) + z].getTemperature());
+                            averageTemp += Float.parseFloat(dataArray.getOfficialDataArray()[index].getTemperature());
 
                         }
 
-                        OfficialData x = new OfficialData(fullArray[j].getTimeStamp(), formatTemp(averageTemp).toString(), dataArray.getOfficialDataArray()[j].getSourceName());
+                        System.out.println(fullArray[index].getTimeStamp());
+                        OfficialData x = new OfficialData(toDayName(fullArray[index].getTimeStamp()), formatTemp(averageTemp / 24).toString(), dataArray.getOfficialDataArray()[index].getSourceName());
                         array[counter] = x;
                         averageTemp = 0;
-                        counter++;
+                        counter--;
+                        index += 24;
 
                     }
                     break;
@@ -216,6 +223,8 @@ public class Controller implements Initializable {
 
 
             }
+            returnable = new OfficialDataHandler(array, array.length);
+            return returnable;
         }
         return null;
     }
@@ -223,6 +232,7 @@ public class Controller implements Initializable {
     private SensorDataHandler sort(SensorDataHandler dataArray, int toDo) {
 
         SensorData[] fullArray = dataArray.getSensorDataArray();
+        SensorDataHandler returnable;
 
         if(toDo == 0){
 
@@ -232,25 +242,63 @@ public class Controller implements Initializable {
 
                 if (date.equals(fullArray[i].getTimeStamp().substring(0, 10))) {
 
-                    int counter = 0;
+                    int counter = array.length - 1;
 
                     for(int j = i; j < i + 24; j++){
 
                         SensorData x = new SensorData(fullArray[j].getTimeStamp(), dataArray.formatTemp(j).toString(), dataArray.getSensorDataArray()[j].getSourceName());
                         array[counter] = x;
-                        counter++;
+                        counter--;
 
                     }
                     break;
                 }
             }
-            SensorDataHandler returnable = new SensorDataHandler(array, array.length);
+            returnable = new SensorDataHandler(array, array.length);
+            return returnable;
+        } else if (toDo == 1) {
+
+            SensorData[] array = new SensorData[7];
+            float averageTemp = 0;
+
+            for (int i = 0; i < fullArray.length; i++) {
+
+                if (date.equals(fullArray[i].getTimeStamp().substring(0, 10))) {
+
+                    int counter = array.length - 1;
+                    int index = i;
+
+                    while (counter >= 0) {
+
+                        for (int z = 0; z < 24; z++) {
+
+                            averageTemp += Float.parseFloat(dataArray.getSensorDataArray()[index].getTemperature());
+
+                        }
+
+                        SensorData x = new SensorData(toDayName(fullArray[index].getTimeStamp()), formatTemp(averageTemp / 24).toString(), dataArray.getSensorDataArray()[index].getSourceName());
+                        array[counter] = x;
+                        averageTemp = 0;
+                        counter--;
+                        index += 24;
+
+                    }
+                    break;
+                }
+            }
+            returnable = new SensorDataHandler(array, array.length);
             return returnable;
         }
 
         return null;
     }
 
+    private String toDayName(String timeStamp) {
+
+
+        return timeStamp;
+
+    }
 
 
     public Float formatTemp(float x){
