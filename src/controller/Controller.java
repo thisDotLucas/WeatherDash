@@ -246,7 +246,7 @@ public class Controller implements Initializable {
                         }
 
                         for (int z = 0; z < hoursInADay; z++) {
-                            
+
                             averageTemp += Float.parseFloat(dataArray.getOfficialDataArray()[index + z].getTemperature());
 
                         }
@@ -342,8 +342,6 @@ public class Controller implements Initializable {
                         }
 
                         for (int z = 0; z < hoursInADay; z++) {
-
-                            System.out.println(z);
 
                             averageTemp += Float.parseFloat(dataArray.getSensorDataArray()[index + z].getTemperature());
 

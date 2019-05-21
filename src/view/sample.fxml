@@ -118,7 +118,7 @@
             <StackPane fx:id="sensorBack" layoutX="289.0" layoutY="553.0" prefHeight="233.0" prefWidth="301.0">
                <children>
                   <Circle fx:id="sensorCircle" fill="#f1f1f2" radius="100.0" stroke="#3e50b4" strokeType="INSIDE" strokeWidth="9.0" />
-                  <Label fx:id="sensorTempLabel" alignment="CENTER" prefHeight="150.0" prefWidth="149.0" text="34.4C" textAlignment="CENTER">
+                  <Label fx:id="sensorTempLabel" alignment="CENTER" prefHeight="160.0" prefWidth="175.0" text="34.4C" textAlignment="CENTER">
                      <font>
                         <Font size="48.0" />
                      </font>
@@ -129,7 +129,7 @@
                <children>
                   <Circle fx:id="weatherCircle" fill="#eeeeee" radius="100.0" stroke="#ff3f80" strokeType="INSIDE" strokeWidth="9.0" />
                   <HBox prefHeight="100.0" prefWidth="200.0" />
-                  <Label fx:id="weatherTempLabel" alignment="CENTER" prefHeight="150.0" prefWidth="149.0" text="32.5C">
+                  <Label fx:id="weatherTempLabel" alignment="CENTER" prefHeight="166.0" prefWidth="176.0" text="32.5C">
                      <font>
                         <Font size="48.0" />
                      </font>
@@ -139,7 +139,7 @@
             <StackPane fx:id="difBack" layoutX="891.0" layoutY="553.0" prefHeight="233.0" prefWidth="300.0">
                <children>
                   <Circle fx:id="difCircle" fill="#f1f1f2" radius="100.0" stroke="#f77604" strokeType="INSIDE" strokeWidth="9.0" />
-                  <Label fx:id="difTempLabel" alignment="CENTER" prefHeight="162.0" prefWidth="177.0" text="Label">
+                  <Label fx:id="difTempLabel" alignment="CENTER" prefHeight="167.0" prefWidth="180.0" text="Label">
                      <font>
                         <Font size="48.0" />
                      </font>
