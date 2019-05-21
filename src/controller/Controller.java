@@ -24,6 +24,7 @@ import model.*;
 import javax.activation.DataHandler;
 import java.math.RoundingMode;
 import java.net.URL;
+import java.sql.Time;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -41,6 +42,9 @@ public class Controller implements Initializable {
 
 
     String startDate = "2019-05-07"; //sensor data start
+    String weatherAvg;
+    String sensorAvg;
+    String diffAvg;
     String nowDate;
     String nowWeek;
     String date;
@@ -178,8 +182,8 @@ public class Controller implements Initializable {
             XYChart.Data data1 = (new XYChart.Data<String, Number>(officialData.formatDate(i, formatIndex), officialData.formatTemp(i)));
             XYChart.Data data2 = (new XYChart.Data<String, Number>(sensorData.formatDate(i, formatIndex), sensorData.formatTemp(i)));
 
-            data1.setNode(new HoveredThresholdNode(officialData.formatDate(i, formatIndex), officialData.formatTemp(i), 0));
-            data2.setNode(new HoveredThresholdNode(sensorData.formatDate(i, formatIndex), sensorData.formatTemp(i), 1));
+            data1.setNode(new HoveredThresholdNode(sensorData.formatTemp(i), officialData.formatTemp(i), 0));
+            data2.setNode(new HoveredThresholdNode(officialData.formatTemp(i), sensorData.formatTemp(i), 1));
 
             series1.getData().add(data1);
             series2.getData().add(data2);
@@ -537,8 +541,8 @@ public class Controller implements Initializable {
         Float tempToBeFormatted = x;
 
         NumberFormat formatter = NumberFormat.getInstance(Locale.US);
-        formatter.setMaximumFractionDigits(2);
-        formatter.setMinimumFractionDigits(2);
+        formatter.setMaximumFractionDigits(1);
+        formatter.setMinimumFractionDigits(1);
         formatter.setRoundingMode(RoundingMode.HALF_UP);
         Float formatedTemp = new Float(formatter.format(tempToBeFormatted));
 
@@ -559,6 +563,7 @@ public class Controller implements Initializable {
         try {
 
             initGraph();
+            saveAvg();
 
         } catch (NullPointerException e){
 
@@ -607,21 +612,27 @@ public class Controller implements Initializable {
         showByCombBox.setValue("Date");
         showByCombBox.setItems(format);
 
-        LocalDate localDate = datePicker.getValue();
-        date = localDate.toString();
+        //LocalDate localDate = datePicker.getValue();
+        //date = localDate.toString();
+        date = "2019-05-21";
         nowDate = date;
         nowWeek = weekNumber(nowDate);
 
         initGraph();
+        saveAvg();
 
     }
 
-
+    private void saveAvg() {
+        weatherAvg = weatherTempLabel.getText();
+        sensorAvg = sensorTempLabel.getText();
+        diffAvg = difTempLabel.getText();
+    }
 
 
     class HoveredThresholdNode extends StackPane {
 
-        HoveredThresholdNode(String time, float value, int id) {
+        HoveredThresholdNode(float otherValue, float value, int id) {
 
             setPrefSize(10, 10);
 
@@ -629,28 +640,45 @@ public class Controller implements Initializable {
 
             setOnMouseEntered(mouseEvent -> {
                 getChildren().setAll(label);
-                setCursor(Cursor.NONE);
-                toFront();
+                setCursor(Cursor.HAND);
+                if (id == 0) {
+                    weatherTempLabel.setText((formatTemp(value)) + "°C");
+                    sensorTempLabel.setText((formatTemp(otherValue)) + "°C");
+                    float difference = (value - otherValue);
+                    if (difference < 0)
+                        difference = difference * -1;
+                    difTempLabel.setText(String.format("%.02f", difference) + "°C");
+                } else {
+                    weatherTempLabel.setText((formatTemp(otherValue)) + "°C");
+                    sensorTempLabel.setText((formatTemp(value)) + "°C");
+                    float difference = (value - otherValue);
+                    if (difference < 0)
+                        difference = difference * -1;
+                    difTempLabel.setText(String.format("%.02f", difference) + "°C");
+                }
+                //toFront();
             });
 
             setOnMouseExited(mouseEvent -> {
                 getChildren().clear();
                 setCursor(Cursor.CROSSHAIR);
+                weatherTempLabel.setText(weatherAvg);
+                sensorTempLabel.setText(sensorAvg);
+                difTempLabel.setText(diffAvg);
+
             });
         }
 
         private Label createDataThresholdLabel(String time, float value, int id) {
 
-            final Label label = new Label(value + "");
+            final Label label = new Label( "");
 
-            label.getStyleClass().addAll("default-color0", "chart-line-symbol", "chart-series-line");
+            //label.getStyleClass().addAll("default-color", "chart-line-symbol", "chart-series-line");
 
-            if(id == 0)
-                label.setStyle("-fx-border-color: #ff3f80;");
-            else
-                label.setStyle("-fx-border-color: #3e50b4;");
+            label.setStyle("-fx-stroke-dash-array: 10 10");
 
             label.setMinSize(Label.USE_PREF_SIZE, Label.USE_PREF_SIZE);
+
 
             return label;
         }
