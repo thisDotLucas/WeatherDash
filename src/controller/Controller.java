@@ -2,8 +2,10 @@ package controller;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Cursor;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
@@ -13,11 +15,15 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 
 import javafx.event.ActionEvent;
+import javafx.scene.control.RadioButton;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
 import model.*;
 
+import javax.activation.DataHandler;
 import java.math.RoundingMode;
 import java.net.URL;
-import java.text.Format;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -72,6 +78,13 @@ public class Controller implements Initializable {
     @FXML
     public NumberAxis yAxis;
 
+    //Radio buttons
+    @FXML
+    public RadioButton radioTemperature;
+
+    @FXML
+    public RadioButton radioHumidity;
+
 
 
     //Sets header label
@@ -89,6 +102,7 @@ public class Controller implements Initializable {
        changeAction();
 
     }
+
 
 
 
@@ -134,6 +148,10 @@ public class Controller implements Initializable {
 
     }
 
+
+
+
+
     //Line chart
     @FXML
     public void initGraph(){
@@ -157,13 +175,22 @@ public class Controller implements Initializable {
             officialDataAverage += officialData.formatTemp(i);
             sensorDataAverage += sensorData.formatTemp(i);
 
-            series1.getData().add(new XYChart.Data<String, Number>(officialData.formatDate(i, formatIndex), officialData.formatTemp(i)));
-            series2.getData().add(new XYChart.Data<String, Number>(sensorData.formatDate(i, formatIndex), sensorData.formatTemp(i)));
+            XYChart.Data data1 = (new XYChart.Data<String, Number>(officialData.formatDate(i, formatIndex), officialData.formatTemp(i)));
+            XYChart.Data data2 = (new XYChart.Data<String, Number>(sensorData.formatDate(i, formatIndex), sensorData.formatTemp(i)));
+
+            data1.setNode(new HoveredThresholdNode(officialData.formatDate(i, formatIndex), officialData.formatTemp(i), 0));
+            data2.setNode(new HoveredThresholdNode(sensorData.formatDate(i, formatIndex), sensorData.formatTemp(i), 1));
+
+            series1.getData().add(data1);
+            series2.getData().add(data2);
 
         }
 
         chart.getData().addAll(series1, series2);
 
+
+
+        ///////
         weatherTempLabel.setText(String.format("%.01f", officialDataAverage / officialData.size()) + "°C");
         sensorTempLabel.setText(String.format("%.01f",sensorDataAverage / sensorData.size()) + "°C");
 
@@ -176,195 +203,253 @@ public class Controller implements Initializable {
 
     }
 
+
+
+
+
+
     private OfficialDataHandler sort(OfficialDataHandler dataArray, int toDo) {
+
+        if (toDo == 0) { //date
+
+            return sortByDayOfficial(dataArray);
+            
+
+        } else if (toDo == 1) { //week
+
+           return sortByWeekOfficial(dataArray);
+
+        }
+        return null;
+    }
+
+    private OfficialDataHandler sortByWeekOfficial(OfficialDataHandler dataArray) {
 
         OfficialData[] fullArray = dataArray.getOfficialDataArray();
         OfficialDataHandler returnable;
 
-        if (toDo == 0) { //date
+        OfficialData[] array = null;
+        float averageTemp = 0;
 
-            OfficialData[] array = new OfficialData[24];
-            OfficialData x;
+        for (int i = 0; i < fullArray.length; i++) {
 
-            for (int i = 0; i < fullArray.length; i++) {
+            if (weekNumber(date).equals(weekNumber(fullArray[i].getTimeStamp().substring(0, 10)))) {
 
-                if (date.equals(fullArray[i].getTimeStamp().substring(0, 10)) && fullArray[i].getTimeStamp().substring(11, 16).equals("00:00")) {
+                int arrayLength = getDayNumber(toDayName(fullArray[i].getTimeStamp().substring(0, 10)));
+                array = new OfficialData[arrayLength];
 
-                    int counter = 0;
-                    int diff = 0;
+                int counter = array.length - 1;
+                int index = i;
+                int lastlap = 0;
+                int hoursInADay = 24;
+                boolean checkLastDay = false;
 
-                    for (int j = i; j < i + 24; j++) {
+                if (weekNumber(date).equals(nowWeek)){
 
-                        if (i - diff < 0){
-                            x = new OfficialData(fullArray[0].getTimeStamp(), dataArray.formatTemp(0).toString(), dataArray.getOfficialDataArray()[0].getSourceName());
-                        } else
-                            x = new OfficialData(fullArray[i - diff].getTimeStamp(), dataArray.formatTemp(i - diff).toString(), dataArray.getOfficialDataArray()[i - diff].getSourceName());
-                        array[counter] = x;
-                        counter++;
-                        diff++;
+                    lastlap = Integer.parseInt(fullArray[0].getTimeStamp().substring(11, 13)) + 1;
+                    checkLastDay = true;
 
-                    }
-                    break;
-                }
-            }
-
-            returnable = new OfficialDataHandler(array, array.length);
-
-            return returnable;
-
-        } else if (toDo == 1) { //week
-
-            OfficialData[] array = null;
-            float averageTemp = 0;
-
-            for (int i = 0; i < fullArray.length; i++) {
-
-                if (weekNumber(date).equals(weekNumber(fullArray[i].getTimeStamp().substring(0, 10)))) {
-
-                    int arrayLength = getDayNumber(toDayName(fullArray[i].getTimeStamp().substring(0, 10)));
-                    array = new OfficialData[arrayLength];
-
-                    int counter = array.length - 1;
-                    int index = i;
-                    int lastlap = 0;
-                    int hoursInADay = 24;
-                    boolean checkLastDay = false;
-
-                    if (weekNumber(date).equals(nowWeek)){
-
-                        lastlap = Integer.parseInt(fullArray[0].getTimeStamp().substring(11, 13)) + 1;
-                        checkLastDay = true;
-
-                    }
-
-                    while (counter >= 0) {
-
-                        if (checkLastDay && counter - 1 == 0){
-
-                            hoursInADay = lastlap;
-
-                        }
-
-                        for (int z = 0; z < hoursInADay; z++) {
-
-                            averageTemp += Float.parseFloat(dataArray.getOfficialDataArray()[index + z].getTemperature());
-
-                        }
-
-                        OfficialData x;
-                        x = new OfficialData(toDayName(fullArray[index].getTimeStamp()), formatTemp(averageTemp / hoursInADay).toString(), dataArray.getOfficialDataArray()[index].getSourceName());
-
-                        array[counter] = x;
-                        averageTemp = 0;
-                        counter--;
-                        index += 24;
-
-                    }
-                    break;
                 }
 
+                while (counter >= 0) {
 
+                    if (checkLastDay && counter - 1 == 0){
+
+                        hoursInADay = lastlap;
+
+                    }
+
+                    for (int z = 0; z < hoursInADay; z++) {
+
+                        averageTemp += Float.parseFloat(dataArray.getOfficialDataArray()[index + z].getTemperature());
+
+                    }
+
+                    OfficialData x;
+                    x = new OfficialData(toDayName(fullArray[index].getTimeStamp()), formatTemp(averageTemp / hoursInADay).toString(), dataArray.getOfficialDataArray()[index].getSourceName());
+
+                    array[counter] = x;
+                    averageTemp = 0;
+                    counter--;
+                    index += 24;
+
+                }
+                break;
             }
-            returnable = new OfficialDataHandler(array, array.length);
-            return returnable;
+
+
         }
+        returnable = new OfficialDataHandler(array, array.length);
+        return returnable;
+    }
+
+
+
+
+
+
+    private SensorDataHandler sort(SensorDataHandler dataArray, int toDo) {
+
+        if(toDo == 0){//date
+
+            return sortByDaySensor(dataArray);
+
+        } else if (toDo == 1) {//week
+
+            return sortByWeekSensor(dataArray);
+
+        }
+
         return null;
     }
 
-    private SensorDataHandler sort(SensorDataHandler dataArray, int toDo) {
+
+
+
+
+
+
+    private SensorDataHandler sortByWeekSensor(SensorDataHandler dataArray) {
 
         SensorData[] fullArray = dataArray.getSensorDataArray();
         SensorDataHandler returnable;
 
-        if(toDo == 0){
+        float averageTemp = 0;
+        SensorData[] array = null;
 
-            SensorData[] array = new SensorData[24];
-            SensorData x;
+        for (int i = 0; i < fullArray.length; i++) {
 
-            for(int i = 0; i < i + 24; i++) {
+            if (weekNumber(date).equals(weekNumber(fullArray[i].getTimeStamp().substring(0, 10)))){
 
-                if (date.equals(fullArray[i].getTimeStamp().substring(0, 10)) && fullArray[i].getTimeStamp().substring(11, 16).equals("00:00")) {
+                int arrayLength = getDayNumber(toDayName(fullArray[i].getTimeStamp().substring(0, 10)));
+                array = new SensorData[arrayLength];
 
-                    int counter = 0;
-                    int diff = 0;
+                int counter = array.length - 1;
+                int index = i;
+                int lastlap = 0;
+                int hoursInADay = 24;
+                boolean checkLastDay = false;
 
-                    for(int j = i; j < i + 24; j++){
+                if (weekNumber(date).equals(nowWeek)){
 
-                        if (i - diff < 0){
-                            x = new SensorData(fullArray[0].getTimeStamp(), dataArray.formatTemp(0).toString(), dataArray.getSensorDataArray()[0].getSourceName());
-                        } else
-                            x = new SensorData(fullArray[i - diff].getTimeStamp(), dataArray.formatTemp(i - diff).toString(), dataArray.getSensorDataArray()[i - diff].getSourceName());
+                    lastlap = Integer.parseInt(fullArray[0].getTimeStamp().substring(11, 13)) + 1;
+                    checkLastDay = true;
 
-                        array[counter] = x;
-                        counter++;
-                        diff++;
-
-                    }
-                    break;
                 }
-            }
-            returnable = new SensorDataHandler(array, array.length);
-            return returnable;
-
-        } else if (toDo == 1) {
 
 
-            float averageTemp = 0;
-            SensorData[] array = null;
+                while (counter >= 0) {
 
-            for (int i = 0; i < fullArray.length; i++) {
+                    if (checkLastDay && counter - 1 == 0){
 
-                if (weekNumber(date).equals(weekNumber(fullArray[i].getTimeStamp().substring(0, 10)))){
-
-                    int arrayLength = getDayNumber(toDayName(fullArray[i].getTimeStamp().substring(0, 10)));
-                    array = new SensorData[arrayLength];
-
-                    int counter = array.length - 1;
-                    int index = i;
-                    int lastlap = 0;
-                    int hoursInADay = 24;
-                    boolean checkLastDay = false;
-
-                    if (weekNumber(date).equals(nowWeek)){
-
-                        lastlap = Integer.parseInt(fullArray[0].getTimeStamp().substring(11, 13)) + 1;
-                        checkLastDay = true;
+                        hoursInADay = lastlap;
 
                     }
 
+                    for (int z = 0; z < hoursInADay; z++) {
 
-                    while (counter >= 0) {
-
-                        if (checkLastDay && counter - 1 == 0){
-
-                            hoursInADay = lastlap;
-
-                        }
-
-                        for (int z = 0; z < hoursInADay; z++) {
-
-                            averageTemp += Float.parseFloat(dataArray.getSensorDataArray()[index + z].getTemperature());
-
-                        }
-
-                        SensorData x;
-                        x = new SensorData(toDayName(fullArray[index].getTimeStamp()), formatTemp(averageTemp / hoursInADay).toString(), dataArray.getSensorDataArray()[index].getSourceName());
-
-                        array[counter] = x;
-                        averageTemp = 0;
-                        counter--;
-                        index += 24;
+                        averageTemp += Float.parseFloat(dataArray.getSensorDataArray()[index + z].getTemperature());
 
                     }
-                    break;
+
+                    SensorData x;
+                    x = new SensorData(toDayName(fullArray[index].getTimeStamp()), formatTemp(averageTemp / hoursInADay).toString(), dataArray.getSensorDataArray()[index].getSourceName());
+
+                    array[counter] = x;
+                    averageTemp = 0;
+                    counter--;
+                    index += 24;
+
                 }
+                break;
             }
-            returnable = new SensorDataHandler(array, array.length);
-            return returnable;
+        }
+        returnable = new SensorDataHandler(array, array.length);
+        return returnable;
+    }
+
+
+
+
+
+
+
+    private SensorDataHandler sortByDaySensor(SensorDataHandler dataArray) {
+
+        SensorData[] fullArray = dataArray.getSensorDataArray();
+        SensorDataHandler returnable;
+
+        SensorData[] array = new SensorData[24];
+        SensorData x;
+
+        for(int i = 0; i < i + 24; i++) {
+
+            if (date.equals(fullArray[i].getTimeStamp().substring(0, 10)) && fullArray[i].getTimeStamp().substring(11, 16).equals("00:00")) {
+
+                int counter = 0;
+                int diff = 0;
+
+                for(int j = i; j < i + 24; j++){
+
+                    if (i - diff < 0){
+                        x = new SensorData(fullArray[0].getTimeStamp(), dataArray.formatTemp(0).toString(), dataArray.getSensorDataArray()[0].getSourceName());
+                    } else
+                        x = new SensorData(fullArray[i - diff].getTimeStamp(), dataArray.formatTemp(i - diff).toString(), dataArray.getSensorDataArray()[i - diff].getSourceName());
+
+                    array[counter] = x;
+                    counter++;
+                    diff++;
+
+                }
+                break;
+            }
+        }
+        returnable = new SensorDataHandler(array, array.length);
+        return returnable;
+    }
+
+
+
+
+
+
+    
+    private OfficialDataHandler sortByDayOfficial(OfficialDataHandler dataArray){
+
+        OfficialData[] fullArray = dataArray.getOfficialDataArray();
+        OfficialDataHandler returnable;
+        
+        OfficialData[] array = new OfficialData[24];
+        OfficialData x;
+
+        for (int i = 0; i < fullArray.length; i++) {
+
+            if (date.equals(fullArray[i].getTimeStamp().substring(0, 10)) && fullArray[i].getTimeStamp().substring(11, 16).equals("00:00")) {
+
+                int counter = 0;
+                int diff = 0;
+
+                for (int j = i; j < i + 24; j++) {
+
+                    if (i - diff < 0){
+                        x = new OfficialData(fullArray[0].getTimeStamp(), dataArray.formatTemp(0).toString(), dataArray.getOfficialDataArray()[0].getSourceName());
+                    } else
+                        x = new OfficialData(fullArray[i - diff].getTimeStamp(), dataArray.formatTemp(i - diff).toString(), dataArray.getOfficialDataArray()[i - diff].getSourceName());
+                    array[counter] = x;
+                    counter++;
+                    diff++;
+
+                }
+                break;
+            }
         }
 
-        return null;
+        returnable = new OfficialDataHandler(array, array.length);
+        return returnable;
     }
+
+
+
 
 
 
@@ -398,6 +483,11 @@ public class Controller implements Initializable {
 
     }
 
+
+
+
+
+
     private String toDayName(String timeStamp) {
 
         Date date = null;
@@ -410,6 +500,11 @@ public class Controller implements Initializable {
         return new SimpleDateFormat("EEE", Locale.ENGLISH).format(date);
 
     }
+
+
+
+
+
 
     private String weekNumber(String input){
 
@@ -433,6 +528,10 @@ public class Controller implements Initializable {
     }
 
 
+
+
+
+
     public Float formatTemp(float x){
 
         Float tempToBeFormatted = x;
@@ -446,6 +545,10 @@ public class Controller implements Initializable {
         return formatedTemp;
 
     }
+
+
+
+
 
     private void changeAction(){
 
@@ -478,6 +581,10 @@ public class Controller implements Initializable {
     }
 
 
+
+
+
+
     //At start
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -507,5 +614,45 @@ public class Controller implements Initializable {
 
         initGraph();
 
+    }
+
+
+
+
+    class HoveredThresholdNode extends StackPane {
+
+        HoveredThresholdNode(String time, float value, int id) {
+
+            setPrefSize(10, 10);
+
+            final Label label = createDataThresholdLabel(date, value, id);
+
+            setOnMouseEntered(mouseEvent -> {
+                getChildren().setAll(label);
+                setCursor(Cursor.NONE);
+                toFront();
+            });
+
+            setOnMouseExited(mouseEvent -> {
+                getChildren().clear();
+                setCursor(Cursor.CROSSHAIR);
+            });
+        }
+
+        private Label createDataThresholdLabel(String time, float value, int id) {
+
+            final Label label = new Label(value + "");
+
+            label.getStyleClass().addAll("default-color0", "chart-line-symbol", "chart-series-line");
+
+            if(id == 0)
+                label.setStyle("-fx-border-color: #ff3f80;");
+            else
+                label.setStyle("-fx-border-color: #3e50b4;");
+
+            label.setMinSize(Label.USE_PREF_SIZE, Label.USE_PREF_SIZE);
+
+            return label;
+        }
     }
 }
