@@ -34,6 +34,8 @@ public class Controller implements Initializable {
     ObservableList<String> format = FXCollections.observableArrayList("Date", "Week", "Month (N/A)", "Year (N/A)");
 
 
+    String startDate = "2019-05-07"; //sensor data start
+    String nowDate;
     String date;
     String week;
     String month;
@@ -80,13 +82,21 @@ public class Controller implements Initializable {
         pickFormat();
         try {
 
-            initGraph();
+           initGraph();
 
         } catch (NullPointerException e){
 
             weatherTempLabel.setText("N/A");
             sensorTempLabel.setText("N/A");
             difTempLabel.setText("N/A");
+            if(Integer.parseInt(date.replaceAll("-", "")) > Integer.parseInt(nowDate.replaceAll("-", ""))) {
+                headLabel.setText("Data not available yet. Todays date: " + nowDate);
+            } else if (Integer.parseInt(date.replaceAll("-", "")) < Integer.parseInt(startDate.replaceAll("-", ""))){
+                headLabel.setText("Data available from 07.05.2019 - Current date.");
+            } else {
+                headLabel.setText("Not enough data available yet.");
+            }
+
 
         }
 
@@ -105,6 +115,13 @@ public class Controller implements Initializable {
             weatherTempLabel.setText("N/A");
             sensorTempLabel.setText("N/A");
             difTempLabel.setText("N/A");
+            if(Integer.parseInt(date.replaceAll("-", "")) > Integer.parseInt(nowDate.replaceAll("-", ""))) {
+                headLabel.setText("Data not available yet. Todays date: " + nowDate);
+            } else if (Integer.parseInt(date.replaceAll("-", "")) < Integer.parseInt(startDate.replaceAll("-", ""))){
+                headLabel.setText("Data available from 07.05.2019 - Current date.");
+            } else {
+                headLabel.setText("Not enough data available yet.");
+            }
 
         }
 
@@ -240,6 +257,7 @@ public class Controller implements Initializable {
 
             for (int i = 0; i < fullArray.length; i++) {
 
+                //if (weekNumber(date).equals(weekNumber(fullArray[i].getTimeStamp().substring(0, 10))) && toDayName(fullArray[i].getTimeStamp().substring(0, 10)).equals("Sun") && fullArray[i].getTimeStamp().substring(11, 16).equals("00:00")) {
                 if (weekNumber(date).equals(weekNumber(fullArray[i].getTimeStamp().substring(0, 10)))) {
 
 
@@ -250,7 +268,10 @@ public class Controller implements Initializable {
 
                         for (int z = 0; z < 24; z++) {
 
-                            averageTemp += Float.parseFloat(dataArray.getOfficialDataArray()[index].getTemperature());
+                            //if(!weekNumber(date).equals(weekNumber(fullArray[i].getTimeStamp().substring(0, 10)))){
+                              //  break;
+                            //} else
+                                averageTemp += Float.parseFloat(dataArray.getOfficialDataArray()[index + z].getTemperature());
 
                         }
 
@@ -315,8 +336,10 @@ public class Controller implements Initializable {
             for (int i = 0; i < fullArray.length; i++) {
 
                 //if (weekNumber(date).equals(weekNumber(fullArray[i].getTimeStamp().substring(0, 10))) && toDayName(fullArray[i].getTimeStamp().substring(0, 10)).equals("Sun") && fullArray[i].getTimeStamp().substring(11, 16).equals("00:00")) {
-                if (weekNumber(date).equals(weekNumber(fullArray[i].getTimeStamp().substring(0, 10))) && toDayName(fullArray[i].getTimeStamp().substring(0, 10)).equals("Sun")){
+                if (weekNumber(date).equals(weekNumber(fullArray[i].getTimeStamp().substring(0, 10)))){
 
+                    int arrayLength = getDayNumber(toDayName(date));
+                    
                     int counter = array.length - 1;
                     int index = i;
 
@@ -324,7 +347,10 @@ public class Controller implements Initializable {
 
                         for (int z = 0; z < 24; z++) {
 
-                            averageTemp += Float.parseFloat(dataArray.getSensorDataArray()[index].getTemperature());
+                            //if(!weekNumber(date).equals(weekNumber(fullArray[i].getTimeStamp().substring(0, 10)))){
+                              //  break;
+                            //} else
+                                averageTemp += Float.parseFloat(dataArray.getSensorDataArray()[index + z].getTemperature());
 
                         }
 
@@ -343,6 +369,43 @@ public class Controller implements Initializable {
         }
 
         return null;
+    }
+
+    private int getDayNumber(String dayName) {
+
+        switch (dayName){
+
+            case "Mon":
+                return 1;
+                break;
+
+            case "Tue":
+                return 2;
+                break;
+
+            case "Wed":
+                return 3;
+                break;
+
+            case "Thu":
+                return 4;
+                break;
+
+            case "Fri":
+                return 5;
+                break;
+
+            case "Sat":
+                return 6;
+                break;
+
+            case "Sun":
+                return 7;
+                break;
+        }
+
+        return 0;
+
     }
 
     private String toDayName(String timeStamp) {
@@ -419,6 +482,7 @@ public class Controller implements Initializable {
 
         LocalDate localDate = datePicker.getValue();
         date = localDate.toString();
+        nowDate = date;
 
         initGraph();
 
