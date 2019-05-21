@@ -36,6 +36,7 @@ public class Controller implements Initializable {
 
     String startDate = "2019-05-07"; //sensor data start
     String nowDate;
+    String nowWeek;
     String date;
     String week;
     String month;
@@ -218,7 +219,6 @@ public class Controller implements Initializable {
 
             for (int i = 0; i < fullArray.length; i++) {
 
-                //if (weekNumber(date).equals(weekNumber(fullArray[i].getTimeStamp().substring(0, 10))) && toDayName(fullArray[i].getTimeStamp().substring(0, 10)).equals("Sun") && fullArray[i].getTimeStamp().substring(11, 16).equals("00:00")) {
                 if (weekNumber(date).equals(weekNumber(fullArray[i].getTimeStamp().substring(0, 10)))) {
 
                     int arrayLength = getDayNumber(toDayName(fullArray[i].getTimeStamp().substring(0, 10)));
@@ -226,17 +226,34 @@ public class Controller implements Initializable {
 
                     int counter = array.length - 1;
                     int index = i;
+                    int lastlap = 0;
+                    int hoursInADay = 24;
+                    boolean checkLastDay = false;
+
+                    if (weekNumber(date).equals(nowWeek)){
+
+                        lastlap = Integer.parseInt(fullArray[0].getTimeStamp().substring(11, 13)) + 1;
+                        checkLastDay = true;
+
+                    }
 
                     while (counter >= 0) {
 
+                        if (checkLastDay && counter - 1 == 0){
 
-                        for (int z = 0; z < 24; z++) {
+                            hoursInADay = lastlap;
 
+                        }
+
+                        for (int z = 0; z < hoursInADay; z++) {
+                            
                             averageTemp += Float.parseFloat(dataArray.getOfficialDataArray()[index + z].getTemperature());
 
                         }
 
-                        OfficialData x = new OfficialData(toDayName(fullArray[index].getTimeStamp()), formatTemp(averageTemp / 24).toString(), dataArray.getOfficialDataArray()[index].getSourceName());
+                        OfficialData x;
+                        x = new OfficialData(toDayName(fullArray[index].getTimeStamp()), formatTemp(averageTemp / hoursInADay).toString(), dataArray.getOfficialDataArray()[index].getSourceName());
+
                         array[counter] = x;
                         averageTemp = 0;
                         counter--;
@@ -297,7 +314,6 @@ public class Controller implements Initializable {
 
             for (int i = 0; i < fullArray.length; i++) {
 
-                //if (weekNumber(date).equals(weekNumber(fullArray[i].getTimeStamp().substring(0, 10))) && toDayName(fullArray[i].getTimeStamp().substring(0, 10)).equals("Sun") && fullArray[i].getTimeStamp().substring(11, 16).equals("00:00")) {
                 if (weekNumber(date).equals(weekNumber(fullArray[i].getTimeStamp().substring(0, 10)))){
 
                     int arrayLength = getDayNumber(toDayName(fullArray[i].getTimeStamp().substring(0, 10)));
@@ -305,18 +321,37 @@ public class Controller implements Initializable {
 
                     int counter = array.length - 1;
                     int index = i;
+                    int lastlap = 0;
+                    int hoursInADay = 24;
+                    boolean checkLastDay = false;
+
+                    if (weekNumber(date).equals(nowWeek)){
+
+                        lastlap = Integer.parseInt(fullArray[0].getTimeStamp().substring(11, 13)) + 1;
+                        checkLastDay = true;
+
+                    }
 
 
                     while (counter >= 0) {
 
-                        for (int z = 0; z < 24; z++) {
+                        if (checkLastDay && counter - 1 == 0){
+
+                            hoursInADay = lastlap;
+
+                        }
+
+                        for (int z = 0; z < hoursInADay; z++) {
+
+                            System.out.println(z);
 
                             averageTemp += Float.parseFloat(dataArray.getSensorDataArray()[index + z].getTemperature());
 
                         }
 
+                        SensorData x;
+                        x = new SensorData(toDayName(fullArray[index].getTimeStamp()), formatTemp(averageTemp / hoursInADay).toString(), dataArray.getSensorDataArray()[index].getSourceName());
 
-                        SensorData x = new SensorData(toDayName(fullArray[index].getTimeStamp()), formatTemp(averageTemp / 24).toString(), dataArray.getSensorDataArray()[index].getSourceName());
                         array[counter] = x;
                         averageTemp = 0;
                         counter--;
@@ -419,7 +454,7 @@ public class Controller implements Initializable {
         date = datePicker.getValue().toString();
         chart.getData().clear();
         pickFormat();
-        
+
         try {
 
             initGraph();
@@ -470,6 +505,7 @@ public class Controller implements Initializable {
         LocalDate localDate = datePicker.getValue();
         date = localDate.toString();
         nowDate = date;
+        nowWeek = weekNumber(nowDate);
 
         initGraph();
 
