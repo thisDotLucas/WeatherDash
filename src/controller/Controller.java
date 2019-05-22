@@ -19,6 +19,8 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Shape;
 import model.*;
 
 import javax.activation.DataHandler;
@@ -71,6 +73,8 @@ public class Controller implements Initializable {
     public Label sensorTempLabel;
     @FXML
     public Label showingLabel;
+    @FXML
+    public Label difLabel;
 
     //Datepicker
     @FXML
@@ -196,8 +200,8 @@ public class Controller implements Initializable {
                     XYChart.Data data1 = (new XYChart.Data<String, Number>(weekDays[dayCounter], firstWeekTemps[i]));
                     XYChart.Data data2 = (new XYChart.Data<String, Number>(weekDays[dayCounter], firstWeekTemps[i + 1]));
 
-                    data1.setNode(new HoveredThresholdNode(firstWeekTemps[i + 1], firstWeekTemps[i], 0, weekDays[dayCounter]));
-                    data2.setNode(new HoveredThresholdNode(firstWeekTemps[i], firstWeekTemps[i + 1], 1, weekDays[dayCounter]));
+                    data1.setNode(new HoveredThresholdNode(firstWeekTemps[i + 1], firstWeekTemps[i], 0, weekDays[dayCounter], 0));
+                    data2.setNode(new HoveredThresholdNode(firstWeekTemps[i], firstWeekTemps[i + 1], 1, weekDays[dayCounter], 1));
 
                     series1.getData().add(data1);
                     series2.getData().add(data2);
@@ -212,8 +216,8 @@ public class Controller implements Initializable {
                     XYChart.Data data1 = (new XYChart.Data<String, Number>(weekDays[dayCounter], firstWeekHums[i]));
                     XYChart.Data data2 = (new XYChart.Data<String, Number>(weekDays[dayCounter], firstWeekHums[i + 1]));
 
-                    data1.setNode(new HoveredThresholdNode(firstWeekHums[i + 1], firstWeekHums[i], 0, weekDays[dayCounter]));
-                    data2.setNode(new HoveredThresholdNode(firstWeekHums[i], firstWeekHums[i + 1], 1, weekDays[dayCounter]));
+                    data1.setNode(new HoveredThresholdNode(firstWeekHums[i + 1], firstWeekHums[i], 0, weekDays[dayCounter], 0));
+                    data2.setNode(new HoveredThresholdNode(firstWeekHums[i], firstWeekHums[i + 1], 1, weekDays[dayCounter], 1));
 
                     series1.getData().add(data1);
                     series2.getData().add(data2);
@@ -238,8 +242,8 @@ public class Controller implements Initializable {
                 XYChart.Data data1 = (new XYChart.Data<String, Number>(officialData.formatDate(i, formatIndex), officialData.formatTemp(i)));
                 XYChart.Data data2 = (new XYChart.Data<String, Number>(sensorData.formatDate(i, formatIndex), sensorData.formatTemp(i)));
 
-                data1.setNode(new HoveredThresholdNode(sensorData.formatTemp(i), officialData.formatTemp(i), 0, officialData.formatDate(i, formatIndex)));
-                data2.setNode(new HoveredThresholdNode(officialData.formatTemp(i), sensorData.formatTemp(i), 1, sensorData.formatDate(i, formatIndex)));
+                data1.setNode(new HoveredThresholdNode(sensorData.formatTemp(i), officialData.formatTemp(i), 0, officialData.formatDate(i, formatIndex), 0));
+                data2.setNode(new HoveredThresholdNode(officialData.formatTemp(i), sensorData.formatTemp(i), 1, sensorData.formatDate(i, formatIndex), 1));
 
                 series1.getData().add(data1);
                 series2.getData().add(data2);
@@ -252,8 +256,8 @@ public class Controller implements Initializable {
                 XYChart.Data data1 = (new XYChart.Data<String, Number>(officialData.formatDate(i, formatIndex), officialData.formatHumidity(i)));
                 XYChart.Data data2 = (new XYChart.Data<String, Number>(sensorData.formatDate(i, formatIndex), sensorData.formatHumidity(i)));
 
-                data1.setNode(new HoveredThresholdNode(sensorData.formatHumidity(i), officialData.formatHumidity(i), 0, officialData.formatDate(i, formatIndex)));
-                data2.setNode(new HoveredThresholdNode(officialData.formatHumidity(i), sensorData.formatHumidity(i), 1, sensorData.formatDate(i, formatIndex)));
+                data1.setNode(new HoveredThresholdNode(sensorData.formatHumidity(i), officialData.formatHumidity(i), 0, officialData.formatDate(i, formatIndex), 0));
+                data2.setNode(new HoveredThresholdNode(officialData.formatHumidity(i), sensorData.formatHumidity(i), 1, sensorData.formatDate(i, formatIndex), 1));
 
                 series1.getData().add(data1);
                 series2.getData().add(data2);
@@ -395,6 +399,7 @@ public class Controller implements Initializable {
 
                     array[counter] = x;
                     averageTemp = 0;
+                    averageHum = 0;
                     counter--;
                     index += 24;
 
@@ -484,6 +489,7 @@ public class Controller implements Initializable {
 
                     array[counter] = x;
                     averageTemp = 0;
+                    averageHum = 0;
                     counter--;
                     index += 24;
 
@@ -767,8 +773,10 @@ public class Controller implements Initializable {
 
         if(Integer.parseInt(currTime.substring(0, 2)) > 6)
             nowDate = date;
-        else
+        else {
             nowDate = x.getYesterday();
+            date = nowDate;
+        }
 
         nowWeek = weekNumber(nowDate);
 
@@ -798,7 +806,7 @@ public class Controller implements Initializable {
 
     class HoveredThresholdNode extends StackPane {
 
-        HoveredThresholdNode(float otherValue, float value, int id, String time) {
+        HoveredThresholdNode(float otherValue, float value, int id, String time, int color) {
 
             setPrefSize(10, 10);
 
@@ -807,9 +815,14 @@ public class Controller implements Initializable {
 
             String finalTime = time;
 
+            final Label label = createDataThresholdLabel(0, value, color);
+
             setOnMouseEntered(mouseEvent -> {
 
                 setCursor(Cursor.HAND);
+                difLabel.setText("Difference");
+                getChildren().setAll(label);
+                toFront();
 
                 if (id == 0) {
 
@@ -837,6 +850,7 @@ public class Controller implements Initializable {
 
             setOnMouseExited(mouseEvent -> {
                 getChildren().clear();
+                difLabel.setText("Average Difference");
                 setCursor(Cursor.CROSSHAIR);
                 try {
                     TimeUnit.MILLISECONDS.sleep(200);
@@ -853,6 +867,7 @@ public class Controller implements Initializable {
                     showingLabel.setText("Showing: Average Humidity");
 
             });
+
         }
 
 
@@ -860,7 +875,7 @@ public class Controller implements Initializable {
 
 
 
-        HoveredThresholdNode(int otherValue, int value, int id, String time) {
+        HoveredThresholdNode(int otherValue, int value, int id, String time, int color) {
 
             setPrefSize(10, 10);
 
@@ -868,9 +883,16 @@ public class Controller implements Initializable {
                 time = toFullDayName(time);
 
             String finalTime = time;
+
+            final Label label = createDataThresholdLabel(1, value, color);
+
             setOnMouseEntered(mouseEvent -> {
 
                 setCursor(Cursor.HAND);
+                getChildren().setAll(label);
+                difLabel.setText("Difference");
+                toFront();
+
                 if (id == 0) {
                     weatherTempLabel.setText((Math.round(value)) + "%");
                     sensorTempLabel.setText((Math.round(otherValue)) + "%");
@@ -895,6 +917,7 @@ public class Controller implements Initializable {
 
             setOnMouseExited(mouseEvent -> {
                 getChildren().clear();
+                difLabel.setText("Average Difference");
                 setCursor(Cursor.CROSSHAIR);
                 try {
                     TimeUnit.MILLISECONDS.sleep(200);
@@ -908,6 +931,63 @@ public class Controller implements Initializable {
                 showingLabel.setText("Showing: Average Humidity");
 
             });
+
+        }
+
+
+
+
+        private Label createDataThresholdLabel(int id, float value, int color) {
+
+            final Label label;
+            String nodeColor;
+
+            if(color == 1)
+                nodeColor = "default-color1";
+            else
+                nodeColor = "default-color0";
+
+            if(id == 0) {
+                if (Float.toString(value).length() > 3)
+                    label = new Label(Float.toString(value).substring(0, 4) + "°C");
+                else
+                    label = new Label();
+            } else
+                label = new Label((value) + "%");
+
+            label.getStyleClass().addAll(nodeColor, "chart-line-symbol", "chart-series-line");
+
+            label.setMinSize(Label.USE_PREF_SIZE, Label.USE_PREF_SIZE);
+
+            return label;
+        }
+
+
+
+        private Label createDataThresholdLabel(int id, int value, int color) {
+
+            final Label label;
+
+            String nodeColor;
+
+            if(color == 1)
+                nodeColor = "default-color1";
+            else
+                nodeColor = "default-color0";
+
+            if (id == 0)
+                if (Float.toString(value).length() > 3)
+                    label = new Label(Float.toString(value).substring(0, 4) + "°C");
+                else
+                    label = new Label(value + "°C");
+            else
+                label = new Label(value + "%");
+
+            label.getStyleClass().addAll(nodeColor, "chart-line-symbol", "chart-series-line");
+
+            label.setMinSize(Label.USE_PREF_SIZE, Label.USE_PREF_SIZE);
+
+            return label;
         }
 
 
