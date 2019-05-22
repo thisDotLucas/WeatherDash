@@ -39,8 +39,6 @@ public class Json {
 
             object = new JSONObject(response.toString());
 
-            //if (true) {
-
                 int diff = 0;
                 int check = 2;
                 int officialDataIndex = 0;
@@ -70,41 +68,10 @@ public class Json {
                        officialDataIndex++;
                        check = 1;
 
-                   } else { //yoink yoink
+                   } else {
 
                        diff = 2;
                        check = 2;
-
-                       //int diff = 1;
-
-                       //while(true) {
-                         //  jsonLine = jsonArray.getJSONObject(i - diff);
-                           //if(jsonLine.get("source_name").equals("external_api_turku"))
-                             //  break;
-                           //diff++;
-                       //}
-
-                       //SensorData x = new SensorData(jsonLine.get("timestamp").toString(), jsonLine.get("avg_temp").toString(), jsonLine.get("source_name").toString());
-                       //x.setSourceName("XXXnodemcu_1_turkuXXX");
-                       //sensorDataArray[sensorDataIndex] = x;
-                       //sensorDataIndex++;
-
-                   //} else {
-
-                     //  int diff = 1;
-
-                       //while(true) {
-                         //  jsonLine = jsonArray.getJSONObject(i - diff);
-                           ////  break;
-                           //diff++;
-                       //}
-
-                       //OfficialData y = new OfficialData(jsonLine.get("timestamp").toString(), jsonLine.get("avg_temp").toString(), jsonLine.get("source_name").toString());
-                       //y.setSourceName("XXXexternal_api_turkuXXX");
-                       //officialDataArray[officialDataIndex] = y;
-                       //officialDataIndex++;
-
-
 
                    }
 
@@ -115,29 +82,7 @@ public class Json {
                 data[0] = x;
                 data[1] = y;
 
-                int counter = 0;
-                while (officialDataArray[counter + 1] != null){
-
-                   /*
-                    System.out.println(officialDataArray[counter].getSourceName());
-                    System.out.println(officialDataArray[counter].getTimeStamp());
-                    System.out.println(officialDataArray[counter].getTemperature());
-                    System.out.println();
-                    System.out.println(sensorDataArray[counter].getSourceName());
-                    System.out.println(sensorDataArray[counter].getTimeStamp());
-                    System.out.println(sensorDataArray[counter].getTemperature());
-                    System.out.println();
-                    counter++;
-                    */
-                   counter++;
-
-                }
-
                 return data;
-
-           // } else {
-             //   throw new JSONException("AlphaVantage API Limit reached");
-            //}
 
         } catch (Exception IOException) {
             System.out.println(IOException);

@@ -3,9 +3,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import model.Json;
-
-import java.sql.Time;
 import java.util.jar.JarException;
 
 public class Main extends Application {

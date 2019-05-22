@@ -1,7 +1,5 @@
 package model;
 
-import sun.util.calendar.LocalGregorianCalendar;
-
 import java.math.RoundingMode;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -29,7 +27,6 @@ public class OfficialDataHandler {
 
     public String formatDate(int index, int format) {
 
-        //System.out.println(officialDataArray[index]);
         String dateToBeFormatted = officialDataArray[index].getTimeStamp();
         String toBeReturned = "Error";
 

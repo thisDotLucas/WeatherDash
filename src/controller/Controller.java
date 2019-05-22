@@ -53,6 +53,9 @@ public class Controller implements Initializable {
     String month;
     String year;
     Object[] json;
+    float [] firstWeekTemps = {(float)5.5, (float)12.1, (float)6.1, (float)15.4, (float)9.9, (float)17.7, (float)9.8, (float)17.0, (float)9.7, (float)16.2, (float)7.2, (float)14.6};
+    int [] firstWeekHums = {72, 54, 68, 42, 49, 30, 69, 46, 85, 66, 84, 60};
+    String [] weekDays = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
     boolean radiotemp = true;
     boolean radioHum;
     int formatIndex = 0;
@@ -170,8 +173,8 @@ public class Controller implements Initializable {
         chart.setLegendVisible(false);
         chart.setCreateSymbols(false);
 
-        OfficialDataHandler officialData = sort((OfficialDataHandler) json[0], formatIndex);
-        SensorDataHandler sensorData = sort((SensorDataHandler) json[1], formatIndex);
+        OfficialDataHandler officialData = null;
+        SensorDataHandler sensorData = null;
 
         XYChart.Series series1 = new XYChart.Series();
         XYChart.Series series2 = new XYChart.Series();
@@ -179,9 +182,55 @@ public class Controller implements Initializable {
         float officialDataAverage = 0;
         float sensorDataAverage = 0;
 
+        if (weekNumber(date).equals("19") && showByCombBox.getValue().equals("Week")){
+
+            int dayCounter = 1;
+
+            for (int i = 0; i < firstWeekTemps.length; i += 2) {
+
+                if (radiotemp) {
+
+                    officialDataAverage += firstWeekTemps[i];
+                    sensorDataAverage += firstWeekTemps[i + 1];
+
+                    XYChart.Data data1 = (new XYChart.Data<String, Number>(weekDays[dayCounter], firstWeekTemps[i]));
+                    XYChart.Data data2 = (new XYChart.Data<String, Number>(weekDays[dayCounter], firstWeekTemps[i + 1]));
+
+                    data1.setNode(new HoveredThresholdNode(firstWeekTemps[i + 1], firstWeekTemps[i], 0, weekDays[dayCounter]));
+                    data2.setNode(new HoveredThresholdNode(firstWeekTemps[i], firstWeekTemps[i + 1], 1, weekDays[dayCounter]));
+
+                    series1.getData().add(data1);
+                    series2.getData().add(data2);
+
+                    dayCounter++;
+
+                } else {
+
+                    officialDataAverage += firstWeekHums[i];
+                    sensorDataAverage += firstWeekHums[i + 1];
+
+                    XYChart.Data data1 = (new XYChart.Data<String, Number>(weekDays[dayCounter], firstWeekHums[i]));
+                    XYChart.Data data2 = (new XYChart.Data<String, Number>(weekDays[dayCounter], firstWeekHums[i + 1]));
+
+                    data1.setNode(new HoveredThresholdNode(firstWeekHums[i + 1], firstWeekHums[i], 0, weekDays[dayCounter]));
+                    data2.setNode(new HoveredThresholdNode(firstWeekHums[i], firstWeekHums[i + 1], 1, weekDays[dayCounter]));
+
+                    series1.getData().add(data1);
+                    series2.getData().add(data2);
+
+                    dayCounter++;
+
+                }
+            }
+
+        } else {
+
+            officialData = sort((OfficialDataHandler) json[0], formatIndex);
+            sensorData = sort((SensorDataHandler) json[1], formatIndex);
+
         for (int i = 0; i < officialData.size(); i++) {
 
-            if(radiotemp) {
+            if (radiotemp) {
 
                 officialDataAverage += officialData.formatTemp(i);
                 sensorDataAverage += sensorData.formatTemp(i);
@@ -210,6 +259,7 @@ public class Controller implements Initializable {
                 series2.getData().add(data2);
 
             }
+        }
 
 
 
@@ -218,35 +268,61 @@ public class Controller implements Initializable {
 
         chart.getData().addAll(series1, series2);
 
+        if (weekNumber(date).equals("19") && showByCombBox.getValue().equals("Week")){
 
-        if(radiotemp) {
+            if (radiotemp) {
 
-            weatherTempLabel.setText(String.format("%.01f", officialDataAverage / officialData.size()) + "°C");
-            sensorTempLabel.setText(String.format("%.01f", sensorDataAverage / sensorData.size()) + "°C");
+                weatherTempLabel.setText(Float.toString(officialDataAverage / (firstWeekTemps.length / 2)).substring(0, 4) + "°C");
+                sensorTempLabel.setText(Float.toString(sensorDataAverage / (firstWeekTemps.length / 2)).substring(0, 4) + "°C");
 
-            float difference = (sensorDataAverage / sensorData.size()) - (officialDataAverage / officialData.size());
+                float difference = (sensorDataAverage / (firstWeekTemps.length / 2)) - (officialDataAverage / (firstWeekTemps.length / 2));
 
-            if (difference < 0.0)
-                difference = difference * -1;
+                if (difference < 0.0)
+                    difference = difference * -1;
 
-            difTempLabel.setText(String.format("%.02f", difference) + "°C");
+                difTempLabel.setText(Float.toString(difference).substring(0, 5) + "°C");
+
+            } else {
+
+                weatherTempLabel.setText(Math.round(officialDataAverage / (firstWeekTemps.length / 2)) + "%");
+                sensorTempLabel.setText(Math.round(sensorDataAverage / (firstWeekTemps.length / 2)) + "%");
+
+                float x = Math.abs(sensorDataAverage / (firstWeekTemps.length / 2) - officialDataAverage / (firstWeekTemps.length / 2));
+                float y = Math.abs((sensorDataAverage / (firstWeekTemps.length / 2) + officialDataAverage / (firstWeekTemps.length / 2)) / 2);
+
+                double difference = (x / y * 100);
+
+                difTempLabel.setText(Double.toString(difference).substring(0, 4) + "%");
+
+            }
 
         } else {
 
-            weatherTempLabel.setText(Math.round(officialDataAverage / officialData.size()) + "%");
-            sensorTempLabel.setText(Math.round(sensorDataAverage / sensorData.size()) + "%");
+            if (radiotemp) {
 
-            System.out.println(Math.round(sensorDataAverage / sensorData.size()));
-            System.out.println(Math.round(officialDataAverage / officialData.size()));
+                weatherTempLabel.setText(String.format("%.01f", officialDataAverage / officialData.size()) + "°C");
+                sensorTempLabel.setText(String.format("%.01f", sensorDataAverage / sensorData.size()) + "°C");
 
-            double difference = ((Math.round(sensorDataAverage / sensorData.size() - Math.round(officialDataAverage / officialData.size()) / (double) Math.round(sensorDataAverage / sensorData.size()) * 100)));
-            System.out.println(((Math.round(sensorDataAverage / sensorData.size() - Math.round(officialDataAverage / officialData.size()) / (double) Math.round(sensorDataAverage / sensorData.size()) * 100))));
+                float difference = (sensorDataAverage / sensorData.size()) - (officialDataAverage / officialData.size());
 
-            if (difference < 0)
-                difference = difference * -1;
+                if (difference < 0.0)
+                    difference = difference * -1;
 
-            difTempLabel.setText(Math.round(difference) + "%");
+                difTempLabel.setText(String.format("%.02f", difference) + "°C");
 
+            } else {
+
+                weatherTempLabel.setText(Math.round(officialDataAverage / officialData.size()) + "%");
+                sensorTempLabel.setText(Math.round(sensorDataAverage / sensorData.size()) + "%");
+
+                float x = Math.abs(sensorDataAverage / sensorData.size() - officialDataAverage / officialData.size());
+                float y = Math.abs((sensorDataAverage / sensorData.size() + officialDataAverage / officialData.size()) / 2);
+
+                double difference = (x / y * 100);
+
+                difTempLabel.setText(String.format("%.1f", difference) + "%");
+
+            }
         }
 
     }
@@ -678,6 +754,7 @@ public class Controller implements Initializable {
 
         model.DateAndTime x = new DateAndTime();
         String currDate = x.getDate();
+        String currTime = x.getTime();
 
         headLabel.setText(currDate);
         datePicker.setValue(x.getLoacalDate());
@@ -685,10 +762,14 @@ public class Controller implements Initializable {
         showByCombBox.setValue("Date");
         showByCombBox.setItems(format);
 
-        //LocalDate localDate = datePicker.getValue();
-        //date = localDate.toString();
-        date = "2019-05-21";
-        nowDate = date;
+        LocalDate localDate = datePicker.getValue();
+        date = localDate.toString();
+
+        if(Integer.parseInt(currTime.substring(0, 2)) > 6)
+            nowDate = date;
+        else
+            nowDate = x.getYesterday();
+
         nowWeek = weekNumber(nowDate);
 
         radioTemperature.setSelected(true);
@@ -721,25 +802,35 @@ public class Controller implements Initializable {
 
             setPrefSize(10, 10);
 
+            if(time.length() == 3)
+                time = toFullDayName(time);
+
+            String finalTime = time;
+
             setOnMouseEntered(mouseEvent -> {
 
                 setCursor(Cursor.HAND);
+
                 if (id == 0) {
+
                     weatherTempLabel.setText((formatTemp(value)) + "°C");
                     sensorTempLabel.setText((formatTemp(otherValue)) + "°C");
                     float difference = (value - otherValue);
                     if (difference < 0)
                         difference = difference * -1;
                     difTempLabel.setText(String.format("%.02f", difference) + "°C");
-                    showingLabel.setText("Showing: Temperature for " + time);
+                    showingLabel.setText("Showing: Temperature for " + finalTime);
+
                 } else {
+
                     weatherTempLabel.setText((formatTemp(otherValue)) + "°C");
                     sensorTempLabel.setText((formatTemp(value)) + "°C");
                     float difference = (value - otherValue);
                     if (difference < 0)
                         difference = difference * -1;
                     difTempLabel.setText(String.format("%.02f", difference) + "°C");
-                    showingLabel.setText("Showing: Temperature for " + time);
+                    showingLabel.setText("Showing: Temperature for " + finalTime);
+
                 }
 
             });
@@ -766,29 +857,38 @@ public class Controller implements Initializable {
 
 
 
+
+
+
         HoveredThresholdNode(int otherValue, int value, int id, String time) {
 
             setPrefSize(10, 10);
 
+            if(time.length() == 3)
+                time = toFullDayName(time);
+
+            String finalTime = time;
             setOnMouseEntered(mouseEvent -> {
 
                 setCursor(Cursor.HAND);
                 if (id == 0) {
                     weatherTempLabel.setText((Math.round(value)) + "%");
                     sensorTempLabel.setText((Math.round(otherValue)) + "%");
-                    float difference = ((value - otherValue) / value) * 100;
-                    if (difference < 0)
-                        difference = difference * -1;
-                    difTempLabel.setText(Math.round(difference) + "%");
-                    showingLabel.setText("Showing: " + "Humidity for " + time);
+                    float x = Math.abs(value - otherValue);
+                    float y = Math.abs(value + otherValue) / 2;
+                    float difference = (x / y) * 100;
+
+                    difTempLabel.setText(String.format("%.1f", difference) + "%");
+                    showingLabel.setText("Showing: " + "Humidity for " + finalTime);
                 } else {
                     weatherTempLabel.setText((Math.round(otherValue)) + "%");
                     sensorTempLabel.setText((Math.round(value)) + "%");
-                    float difference = ((value - otherValue) / value) * 100;
-                    if (difference < 0)
-                        difference = difference * -1;
-                    difTempLabel.setText(Math.round(difference) + "%");
-                    showingLabel.setText("Showing: " + "Humidity for " + time);
+                    float x = Math.abs(value - otherValue);
+                    float y = Math.abs(value + otherValue) / 2;
+                    float difference = (x / y) * 100;
+
+                    difTempLabel.setText(String.format("%.1f", difference) + "%");
+                    showingLabel.setText("Showing: " + "Humidity for " + finalTime);
                 }
 
             });
@@ -808,6 +908,38 @@ public class Controller implements Initializable {
                 showingLabel.setText("Showing: Average Humidity");
 
             });
+        }
+
+
+        private String toFullDayName(String time) {
+
+            switch (time){
+
+                case "Mon":
+                    return "Monday";
+
+                case "Tue":
+                    return "Tuesday";
+
+                case "Wed":
+                    return "Wednesday";
+
+                case "Thu":
+                    return "Thursday";
+
+                case "Fri":
+                    return "Friday";
+
+                case "Sat":
+                    return "Saturday";
+
+                case "Sun":
+                    return "Sunday";
+
+            }
+
+            return "";
+
         }
     }
 }
