@@ -12,5 +12,9 @@
 
 }
 
+.default-color0.chart-line-symbol{ -fx-background-color: #ff3f80, #ffffff;}
+
+.default-color1.chart-line-symbol{ -fx-background-color: #3e50b4, #ffffff;}
+
 
 

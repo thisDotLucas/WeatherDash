@@ -86,6 +86,16 @@ public class SensorDataHandler {
 
     }
 
+
+    public int formatHumidity(int index){
+
+        if(sensorDataArray[index].getHumidity().length() < 4)
+            return Math.round(Float.parseFloat(sensorDataArray[index].getHumidity()));
+        else
+            return Math.round(Float.parseFloat(sensorDataArray[index].getHumidity().substring(0, 4)));
+
+    }
+
     public int size(){
 
         return size;

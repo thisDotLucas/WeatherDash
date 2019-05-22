@@ -91,6 +91,14 @@ public class OfficialDataHandler {
 
         }
 
+        public int formatHumidity(int index){
+
+        if (officialDataArray[index].getHumidity().length() < 4)
+            return Math.round(Float.parseFloat(officialDataArray[index].getHumidity()));
+        else
+            return Math.round(Float.parseFloat(officialDataArray[index].getHumidity().substring(0, 4)));
+        }
+
         public int size(){
 
             return size;

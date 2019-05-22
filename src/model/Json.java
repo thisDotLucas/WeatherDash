@@ -56,7 +56,7 @@ public class Json {
 
                    if(jsonLine.get("source_name").toString().equals("nodemcu_1_turku") && (check == 1 || check == 2)){
 
-                       SensorData x = new SensorData(jsonLine.get("timestamp").toString(), jsonLine.get("avg_temp").toString(), jsonLine.get("source_name").toString());
+                       SensorData x = new SensorData(jsonLine.get("timestamp").toString(), jsonLine.get("avg_temp").toString(), jsonLine.get("source_name").toString(), jsonLine.get("avg_humidity").toString());
                        sensorDataArray[sensorDataIndex] = x;
                        sensorDataIndex++;
                        check = 0;
@@ -65,7 +65,7 @@ public class Json {
 
                        jsonLine = jsonArray.getJSONObject(i - diff);
 
-                       OfficialData y = new OfficialData(jsonLine.get("timestamp").toString(), jsonLine.get("avg_temp").toString(), jsonLine.get("source_name").toString());
+                       OfficialData y = new OfficialData(jsonLine.get("timestamp").toString(), jsonLine.get("avg_temp").toString(), jsonLine.get("source_name").toString(), jsonLine.get("avg_humidity").toString());
                        officialDataArray[officialDataIndex] = y;
                        officialDataIndex++;
                        check = 1;

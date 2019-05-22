@@ -35,6 +35,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.concurrent.TimeUnit;
 
 public class Controller implements Initializable {
 
@@ -52,6 +53,8 @@ public class Controller implements Initializable {
     String month;
     String year;
     Object[] json;
+    boolean radiotemp = true;
+    boolean radioHum;
     int formatIndex = 0;
 
     //Labels
@@ -63,6 +66,8 @@ public class Controller implements Initializable {
     public Label weatherTempLabel;
     @FXML
     public Label sensorTempLabel;
+    @FXML
+    public Label showingLabel;
 
     //Datepicker
     @FXML
@@ -176,37 +181,75 @@ public class Controller implements Initializable {
 
         for (int i = 0; i < officialData.size(); i++) {
 
-            officialDataAverage += officialData.formatTemp(i);
-            sensorDataAverage += sensorData.formatTemp(i);
+            if(radiotemp) {
 
-            XYChart.Data data1 = (new XYChart.Data<String, Number>(officialData.formatDate(i, formatIndex), officialData.formatTemp(i)));
-            XYChart.Data data2 = (new XYChart.Data<String, Number>(sensorData.formatDate(i, formatIndex), sensorData.formatTemp(i)));
+                officialDataAverage += officialData.formatTemp(i);
+                sensorDataAverage += sensorData.formatTemp(i);
 
-            data1.setNode(new HoveredThresholdNode(sensorData.formatTemp(i), officialData.formatTemp(i), 0));
-            data2.setNode(new HoveredThresholdNode(officialData.formatTemp(i), sensorData.formatTemp(i), 1));
+                XYChart.Data data1 = (new XYChart.Data<String, Number>(officialData.formatDate(i, formatIndex), officialData.formatTemp(i)));
+                XYChart.Data data2 = (new XYChart.Data<String, Number>(sensorData.formatDate(i, formatIndex), sensorData.formatTemp(i)));
 
-            series1.getData().add(data1);
-            series2.getData().add(data2);
+                data1.setNode(new HoveredThresholdNode(sensorData.formatTemp(i), officialData.formatTemp(i), 0, officialData.formatDate(i, formatIndex)));
+                data2.setNode(new HoveredThresholdNode(officialData.formatTemp(i), sensorData.formatTemp(i), 1, sensorData.formatDate(i, formatIndex)));
+
+                series1.getData().add(data1);
+                series2.getData().add(data2);
+
+            } else {
+
+                officialDataAverage += officialData.formatHumidity(i);
+                sensorDataAverage += sensorData.formatHumidity(i);
+
+                XYChart.Data data1 = (new XYChart.Data<String, Number>(officialData.formatDate(i, formatIndex), officialData.formatHumidity(i)));
+                XYChart.Data data2 = (new XYChart.Data<String, Number>(sensorData.formatDate(i, formatIndex), sensorData.formatHumidity(i)));
+
+                data1.setNode(new HoveredThresholdNode(sensorData.formatHumidity(i), officialData.formatHumidity(i), 0, officialData.formatDate(i, formatIndex)));
+                data2.setNode(new HoveredThresholdNode(officialData.formatHumidity(i), sensorData.formatHumidity(i), 1, sensorData.formatDate(i, formatIndex)));
+
+                series1.getData().add(data1);
+                series2.getData().add(data2);
+
+            }
+
+
+
 
         }
 
         chart.getData().addAll(series1, series2);
 
 
+        if(radiotemp) {
 
-        ///////
-        weatherTempLabel.setText(String.format("%.01f", officialDataAverage / officialData.size()) + "°C");
-        sensorTempLabel.setText(String.format("%.01f",sensorDataAverage / sensorData.size()) + "°C");
+            weatherTempLabel.setText(String.format("%.01f", officialDataAverage / officialData.size()) + "°C");
+            sensorTempLabel.setText(String.format("%.01f", sensorDataAverage / sensorData.size()) + "°C");
 
-        float difference = (sensorDataAverage / sensorData.size()) - (officialDataAverage / officialData.size());
+            float difference = (sensorDataAverage / sensorData.size()) - (officialDataAverage / officialData.size());
 
-        if (difference < 0.0)
-            difference = difference * -1;
+            if (difference < 0.0)
+                difference = difference * -1;
 
-        difTempLabel.setText(String.format("%.02f", difference) + "°C");
+            difTempLabel.setText(String.format("%.02f", difference) + "°C");
+
+        } else {
+
+            weatherTempLabel.setText(Math.round(officialDataAverage / officialData.size()) + "%");
+            sensorTempLabel.setText(Math.round(sensorDataAverage / sensorData.size()) + "%");
+
+            System.out.println(Math.round(sensorDataAverage / sensorData.size()));
+            System.out.println(Math.round(officialDataAverage / officialData.size()));
+
+            double difference = ((Math.round(sensorDataAverage / sensorData.size() - Math.round(officialDataAverage / officialData.size()) / (double) Math.round(sensorDataAverage / sensorData.size()) * 100)));
+            System.out.println(((Math.round(sensorDataAverage / sensorData.size() - Math.round(officialDataAverage / officialData.size()) / (double) Math.round(sensorDataAverage / sensorData.size()) * 100))));
+
+            if (difference < 0)
+                difference = difference * -1;
+
+            difTempLabel.setText(Math.round(difference) + "%");
+
+        }
 
     }
-
 
 
 
@@ -234,6 +277,7 @@ public class Controller implements Initializable {
 
         OfficialData[] array = null;
         float averageTemp = 0;
+        int averageHum = 0;
 
         for (int i = 0; i < fullArray.length; i++) {
 
@@ -266,11 +310,12 @@ public class Controller implements Initializable {
                     for (int z = 0; z < hoursInADay; z++) {
 
                         averageTemp += Float.parseFloat(dataArray.getOfficialDataArray()[index + z].getTemperature());
+                        averageHum += Math.round(Float.parseFloat(dataArray.getOfficialDataArray()[index + z].getHumidity()));
 
                     }
 
                     OfficialData x;
-                    x = new OfficialData(toDayName(fullArray[index].getTimeStamp()), formatTemp(averageTemp / hoursInADay).toString(), dataArray.getOfficialDataArray()[index].getSourceName());
+                    x = new OfficialData(toDayName(fullArray[index].getTimeStamp()), formatTemp(averageTemp / hoursInADay).toString(), dataArray.getOfficialDataArray()[index].getSourceName(), Integer.toString(averageHum / hoursInADay) );
 
                     array[counter] = x;
                     averageTemp = 0;
@@ -319,6 +364,7 @@ public class Controller implements Initializable {
         SensorDataHandler returnable;
 
         float averageTemp = 0;
+        int averageHum = 0;
         SensorData[] array = null;
 
         for (int i = 0; i < fullArray.length; i++) {
@@ -353,11 +399,12 @@ public class Controller implements Initializable {
                     for (int z = 0; z < hoursInADay; z++) {
 
                         averageTemp += Float.parseFloat(dataArray.getSensorDataArray()[index + z].getTemperature());
+                        averageHum += Math.round(Float.parseFloat(dataArray.getSensorDataArray()[index + z].getHumidity()));
 
                     }
 
                     SensorData x;
-                    x = new SensorData(toDayName(fullArray[index].getTimeStamp()), formatTemp(averageTemp / hoursInADay).toString(), dataArray.getSensorDataArray()[index].getSourceName());
+                    x = new SensorData(toDayName(fullArray[index].getTimeStamp()), formatTemp(averageTemp / hoursInADay).toString(), dataArray.getSensorDataArray()[index].getSourceName(), Integer.toString(averageHum / hoursInADay));
 
                     array[counter] = x;
                     averageTemp = 0;
@@ -396,9 +443,9 @@ public class Controller implements Initializable {
                 for(int j = i; j < i + 24; j++){
 
                     if (i - diff < 0){
-                        x = new SensorData(fullArray[0].getTimeStamp(), dataArray.formatTemp(0).toString(), dataArray.getSensorDataArray()[0].getSourceName());
+                        x = new SensorData(fullArray[0].getTimeStamp(), dataArray.formatTemp(0).toString(), dataArray.getSensorDataArray()[0].getSourceName(), dataArray.getSensorDataArray()[0].getHumidity());
                     } else
-                        x = new SensorData(fullArray[i - diff].getTimeStamp(), dataArray.formatTemp(i - diff).toString(), dataArray.getSensorDataArray()[i - diff].getSourceName());
+                        x = new SensorData(fullArray[i - diff].getTimeStamp(), dataArray.formatTemp(i - diff).toString(), dataArray.getSensorDataArray()[i - diff].getSourceName(), dataArray.getSensorDataArray()[i - diff].getHumidity());
 
                     array[counter] = x;
                     counter++;
@@ -436,9 +483,9 @@ public class Controller implements Initializable {
                 for (int j = i; j < i + 24; j++) {
 
                     if (i - diff < 0){
-                        x = new OfficialData(fullArray[0].getTimeStamp(), dataArray.formatTemp(0).toString(), dataArray.getOfficialDataArray()[0].getSourceName());
+                        x = new OfficialData(fullArray[0].getTimeStamp(), dataArray.formatTemp(0).toString(), dataArray.getOfficialDataArray()[0].getSourceName(), dataArray.getOfficialDataArray()[0].getHumidity());
                     } else
-                        x = new OfficialData(fullArray[i - diff].getTimeStamp(), dataArray.formatTemp(i - diff).toString(), dataArray.getOfficialDataArray()[i - diff].getSourceName());
+                        x = new OfficialData(fullArray[i - diff].getTimeStamp(), dataArray.formatTemp(i - diff).toString(), dataArray.getOfficialDataArray()[i - diff].getSourceName(), dataArray.getOfficialDataArray()[i - diff].getHumidity());
                     array[counter] = x;
                     counter++;
                     diff++;
@@ -450,6 +497,31 @@ public class Controller implements Initializable {
 
         returnable = new OfficialDataHandler(array, array.length);
         return returnable;
+    }
+
+
+
+    @FXML
+    public void radioTempAction(){
+       radioHumidity.setSelected(false);
+       radiotemp = true;
+       radioHum = false;
+       chart.getData().clear();
+       initGraph();
+       saveAvg();
+    }
+
+
+
+
+    @FXML
+    public void radioHumidityAction(){
+        radioTemperature.setSelected(false);
+        radioHum = true;
+        radiotemp = false;
+        chart.getData().clear();
+        initGraph();
+        saveAvg();
     }
 
 
@@ -570,6 +642,7 @@ public class Controller implements Initializable {
             weatherTempLabel.setText("N/A");
             sensorTempLabel.setText("N/A");
             difTempLabel.setText("N/A");
+            showingLabel.setText("");
             if(Integer.parseInt(date.replaceAll("-", "")) > Integer.parseInt(nowDate.replaceAll("-", ""))) {
                 headLabel.setText("Data not available yet. Todays date: " + nowDate);
             } else if (Integer.parseInt(date.replaceAll("-", "")) < Integer.parseInt(startDate.replaceAll("-", ""))){
@@ -618,28 +691,38 @@ public class Controller implements Initializable {
         nowDate = date;
         nowWeek = weekNumber(nowDate);
 
+        radioTemperature.setSelected(true);
+
         initGraph();
         saveAvg();
 
     }
 
+
+
+
     private void saveAvg() {
         weatherAvg = weatherTempLabel.getText();
         sensorAvg = sensorTempLabel.getText();
         diffAvg = difTempLabel.getText();
+        if (radiotemp)
+        showingLabel.setText("Showing: Average Temperature");
+        else
+            showingLabel.setText("Showing: Average Humidity");
     }
+
+
+
 
 
     class HoveredThresholdNode extends StackPane {
 
-        HoveredThresholdNode(float otherValue, float value, int id) {
+        HoveredThresholdNode(float otherValue, float value, int id, String time) {
 
             setPrefSize(10, 10);
 
-            final Label label = createDataThresholdLabel(date, value, id);
-
             setOnMouseEntered(mouseEvent -> {
-                getChildren().setAll(label);
+
                 setCursor(Cursor.HAND);
                 if (id == 0) {
                     weatherTempLabel.setText((formatTemp(value)) + "°C");
@@ -648,6 +731,7 @@ public class Controller implements Initializable {
                     if (difference < 0)
                         difference = difference * -1;
                     difTempLabel.setText(String.format("%.02f", difference) + "°C");
+                    showingLabel.setText("Showing: Temperature for " + time);
                 } else {
                     weatherTempLabel.setText((formatTemp(otherValue)) + "°C");
                     sensorTempLabel.setText((formatTemp(value)) + "°C");
@@ -655,32 +739,75 @@ public class Controller implements Initializable {
                     if (difference < 0)
                         difference = difference * -1;
                     difTempLabel.setText(String.format("%.02f", difference) + "°C");
+                    showingLabel.setText("Showing: Temperature for " + time);
                 }
-                //toFront();
+
             });
 
             setOnMouseExited(mouseEvent -> {
                 getChildren().clear();
                 setCursor(Cursor.CROSSHAIR);
+                try {
+                    TimeUnit.MILLISECONDS.sleep(200);
+                } catch (Exception e){
+                    System.out.println(e);
+                }
+
                 weatherTempLabel.setText(weatherAvg);
                 sensorTempLabel.setText(sensorAvg);
                 difTempLabel.setText(diffAvg);
+                if(radiotemp)
+                showingLabel.setText("Showing: Average Temperature");
+                else
+                    showingLabel.setText("Showing: Average Humidity");
 
             });
         }
 
-        private Label createDataThresholdLabel(String time, float value, int id) {
-
-            final Label label = new Label( "");
-
-            //label.getStyleClass().addAll("default-color", "chart-line-symbol", "chart-series-line");
-
-            label.setStyle("-fx-stroke-dash-array: 10 10");
-
-            label.setMinSize(Label.USE_PREF_SIZE, Label.USE_PREF_SIZE);
 
 
-            return label;
+        HoveredThresholdNode(int otherValue, int value, int id, String time) {
+
+            setPrefSize(10, 10);
+
+            setOnMouseEntered(mouseEvent -> {
+
+                setCursor(Cursor.HAND);
+                if (id == 0) {
+                    weatherTempLabel.setText((Math.round(value)) + "%");
+                    sensorTempLabel.setText((Math.round(otherValue)) + "%");
+                    float difference = ((value - otherValue) / value) * 100;
+                    if (difference < 0)
+                        difference = difference * -1;
+                    difTempLabel.setText(Math.round(difference) + "%");
+                    showingLabel.setText("Showing: " + "Humidity for " + time);
+                } else {
+                    weatherTempLabel.setText((Math.round(otherValue)) + "%");
+                    sensorTempLabel.setText((Math.round(value)) + "%");
+                    float difference = ((value - otherValue) / value) * 100;
+                    if (difference < 0)
+                        difference = difference * -1;
+                    difTempLabel.setText(Math.round(difference) + "%");
+                    showingLabel.setText("Showing: " + "Humidity for " + time);
+                }
+
+            });
+
+            setOnMouseExited(mouseEvent -> {
+                getChildren().clear();
+                setCursor(Cursor.CROSSHAIR);
+                try {
+                    TimeUnit.MILLISECONDS.sleep(200);
+                } catch (Exception e){
+                    System.out.println(e);
+                }
+
+                weatherTempLabel.setText(weatherAvg);
+                sensorTempLabel.setText(sensorAvg);
+                difTempLabel.setText(diffAvg);
+                showingLabel.setText("Showing: Average Humidity");
+
+            });
         }
     }
 }

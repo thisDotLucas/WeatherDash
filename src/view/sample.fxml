@@ -71,7 +71,7 @@
                               <Insets bottom="16.0" left="10.0" top="10.0" />
                            </VBox.margin>
                         </Label>
-                        <ComboBox fx:id="showByCombBox" onAction="#comboBoxPickerAction" prefWidth="150.0">
+                        <ComboBox fx:id="showByCombBox" onAction="#comboBoxPickerAction" prefWidth="150.0" style="-fx-focus-color: #333645;">
                            <VBox.margin>
                               <Insets left="10.0" />
                            </VBox.margin>
@@ -80,7 +80,7 @@
                   </VBox>
                   <VBox fx:id="radioBoxContainer" prefHeight="113.0" prefWidth="300.0">
                      <children>
-                        <RadioButton fx:id="radioTemperature" mnemonicParsing="false" text="Temperature" textFill="#7c8184">
+                        <RadioButton fx:id="radioTemperature" mnemonicParsing="false" onAction="#radioTempAction" style="-fx-focus-color: #333645;" text="Temperature" textFill="#7c8184">
                            <padding>
                               <Insets left="10.0" />
                            </padding>
@@ -91,7 +91,7 @@
                               <Font name="Ebrima" size="12.0" />
                            </font>
                         </RadioButton>
-                        <RadioButton fx:id="radioHumidity" mnemonicParsing="false" text="Humidity" textFill="#7c8184">
+                        <RadioButton fx:id="radioHumidity" mnemonicParsing="false" onAction="#radioHumidityAction" style="-fx-focus-color: #333645;" text="Humidity" textFill="#7c8184">
                            <VBox.margin>
                               <Insets top="13.0" />
                            </VBox.margin>
@@ -109,6 +109,10 @@
                         <Font name="Ebrima" size="18.0" />
                      </font>
                   </Label>
+                  <Label fx:id="showingLabel" layoutX="152.0" layoutY="31.0" text="Label" textFill="#9e9e9e">
+                     <font>
+                        <Font name="Ebrima" size="18.0" />
+                     </font></Label>
                </children></Pane>
             <LineChart fx:id="chart" layoutX="289.0" layoutY="79.0" prefHeight="420.0" prefWidth="902.0">
               <xAxis>

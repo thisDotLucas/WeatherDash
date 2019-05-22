@@ -5,12 +5,14 @@ public class SensorData {
     String timeStamp;
     String temperature;
     String sourceName;
+    String humidity;
 
-    public SensorData(String timeStamp, String temperature, String sourceName){
+    public SensorData(String timeStamp, String temperature, String sourceName, String humidity){
 
         this.timeStamp = timeStamp;
         this.temperature = temperature;
         this.sourceName = sourceName;
+        this.humidity = humidity;
 
     }
 
@@ -25,6 +27,8 @@ public class SensorData {
     public String getTimeStamp() {
         return timeStamp;
     }
+
+    public String getHumidity() { return humidity; }
 
     public void setSourceName(String sourceName) {
         this.sourceName = sourceName;
