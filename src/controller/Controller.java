@@ -853,7 +853,7 @@ public class Controller implements Initializable {
                 difLabel.setText("Average Difference");
                 setCursor(Cursor.CROSSHAIR);
                 try {
-                    TimeUnit.MILLISECONDS.sleep(200);
+                    TimeUnit.MILLISECONDS.sleep(120);
                 } catch (Exception e){
                     System.out.println(e);
                 }
@@ -920,7 +920,7 @@ public class Controller implements Initializable {
                 difLabel.setText("Average Difference");
                 setCursor(Cursor.CROSSHAIR);
                 try {
-                    TimeUnit.MILLISECONDS.sleep(200);
+                    TimeUnit.MILLISECONDS.sleep(120);
                 } catch (Exception e){
                     System.out.println(e);
                 }
