@@ -1,9 +1,11 @@
 package model;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.jar.JarException;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -12,12 +14,13 @@ import org.json.JSONObject;
 
 public class Json {
 
-    public static JSONObject object;
+    private final static String START_DATE = "2019-05-31";
 
-    public static Object[] data = new Object[2];
+    private static ArrayList<TemperatureData> data = new ArrayList<>();
 
 
-    public static Object[] getJson() throws JarException {
+    public static ArrayList<TemperatureData> getTemperatureDataArrayList() throws JarException {
+
         try {
             String url;
             url = "http://weatherdash-api.app.maxemiliang.cloud/sensor/all?token=SecretTokenHello&interval=1";
@@ -37,58 +40,25 @@ public class Json {
             }
             in.close();
 
-            object = new JSONObject(response.toString());
+            JSONObject object = new JSONObject(response.toString());
 
-                int diff = 0;
-                int check = 2;
-                int officialDataIndex = 0;
-                int sensorDataIndex = 0;
+            JSONArray jsonArray = object.getJSONArray("data");
 
-                JSONArray jsonArray = object.getJSONArray("data");
-                OfficialData[] officialDataArray = new OfficialData[(jsonArray.length() / 2)];
-                SensorData[] sensorDataArray = new SensorData[(jsonArray.length() / 2) + 150];
+            for (int i = 0; i < jsonArray.length(); i++) {
 
-               for(int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonLine = (JSONObject) jsonArray.get(i);
 
-                   JSONObject jsonLine = jsonArray.getJSONObject(i);
+                data.add(new TemperatureData(jsonLine.get("timestamp").toString().replaceAll("T", ",").replaceAll("Z", ""), jsonLine.get("avg_temp").toString(), jsonLine.get("source_name").toString(), jsonLine.get("avg_humidity").toString()));
 
-                   if(jsonLine.get("source_name").toString().equals("nodemcu_1_turku") && (check == 1 || check == 2)){
+                if (jsonLine.get("timestamp").toString().substring(0, 10).equals(START_DATE))
+                    break;
+            }
 
-                       SensorData x = new SensorData(jsonLine.get("timestamp").toString(), jsonLine.get("avg_temp").toString(), jsonLine.get("source_name").toString(), jsonLine.get("avg_humidity").toString());
-                       sensorDataArray[sensorDataIndex] = x;
-                       sensorDataIndex++;
-                       check = 0;
 
-                   } else if(jsonLine.get("source_name").toString().equals("external_api_turku") && (check == 0 || check == 2)){
+        } catch (IOException e) {
+            e.printStackTrace();
 
-                       jsonLine = jsonArray.getJSONObject(i - diff);
-
-                       OfficialData y = new OfficialData(jsonLine.get("timestamp").toString(), jsonLine.get("avg_temp").toString(), jsonLine.get("source_name").toString(), jsonLine.get("avg_humidity").toString());
-                       officialDataArray[officialDataIndex] = y;
-                       officialDataIndex++;
-                       check = 1;
-
-                   } else {
-
-                       diff = 2;
-                       check = 2;
-
-                   }
-
-                }
-
-                OfficialDataHandler x = new OfficialDataHandler(officialDataArray, officialDataIndex);
-                SensorDataHandler y = new SensorDataHandler(sensorDataArray, sensorDataIndex);
-                data[0] = x;
-                data[1] = y;
-
-                return data;
-
-        } catch (Exception IOException) {
-            System.out.println(IOException);
         }
-
         return data;
-
     }
 }
