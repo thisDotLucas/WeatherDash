@@ -99,22 +99,27 @@ public class WeatherDashController implements Initializable {
     @FXML
     private void onMonthComboBox() {
 
-        try {
-            if (monthComboBox.getValue() > 1)
-                monthLabel.setText("months.");
-            else
-                monthLabel.setText("month.");
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    if (monthComboBox.getValue() > 1)
+                        monthLabel.setText("months.");
+                    else
+                        monthLabel.setText("month.");
 
-            if (jumpTextField.getText().equals(""))
-                jumpTextField.setText("3");
+                    if (jumpTextField.getText().equals(""))
+                        jumpTextField.setText("3");
 
-            monthValue = monthComboBox.getValue();
+                    monthValue = monthComboBox.getValue();
 
-            updateChart();
+                    updateChart();
 
-        } catch (NullPointerException e) {
-            monthLabel.setText("month.");
-        }
+                } catch (NullPointerException e) {
+                    monthLabel.setText("month.");
+                }
+            }
+        });
     }
 
 
@@ -201,6 +206,7 @@ public class WeatherDashController implements Initializable {
         } else {
             headLabel.setText("Showing:");
             showingLabel.setText("");
+            jumpTextField.setText("3");
         }
     }
 
