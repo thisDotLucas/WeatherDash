@@ -6,10 +6,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.jar.JarException;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
 
 
 public class Json {
@@ -19,7 +17,7 @@ public class Json {
     private static ArrayList<TemperatureData> data = new ArrayList<>();
 
 
-    public static ArrayList<TemperatureData> getTemperatureDataArrayList() throws JarException {
+    public static ArrayList<TemperatureData> getTemperatureDataArrayList() {
 
         try {
             String url;
@@ -34,7 +32,7 @@ public class Json {
             BufferedReader in = new BufferedReader(
                     new InputStreamReader(con.getInputStream()));
             String inputLine;
-            StringBuffer response = new StringBuffer();
+            StringBuilder response = new StringBuilder();
             while ((inputLine = in.readLine()) != null) {
                 response.append(inputLine);
             }
@@ -53,7 +51,6 @@ public class Json {
                 if (jsonLine.get("timestamp").toString().substring(0, 10).equals(START_DATE))
                     break;
             }
-
 
         } catch (IOException e) {
             e.printStackTrace();

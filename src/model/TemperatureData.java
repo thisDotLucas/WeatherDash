@@ -8,26 +8,21 @@ public class TemperatureData {
 
     private SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
     private SimpleDateFormat timeFormatter = new SimpleDateFormat("hh:mm");
-    private String timeStamp;
     private String temperature;
     private String sourceName;
     private String humidity;
     private Date date;
     private Date time;
     private String strTime;
-    private String weekDay;
     private int week;
     private int month;
-    private int year;
 
-    public TemperatureData(String timeStamp, String temperature, String sourceName, String humidity){
 
-        SimpleDateFormat dayFormatter = new SimpleDateFormat("EEEE");
+    TemperatureData(String timeStamp, String temperature, String sourceName, String humidity) {
+
         SimpleDateFormat weekFormatter = new SimpleDateFormat("w");
         SimpleDateFormat monthFormatter = new SimpleDateFormat("MM");
-        SimpleDateFormat yearFormatter = new SimpleDateFormat("yyyy");
 
-        this.timeStamp = timeStamp;
         this.temperature = String.format("%.1f", Float.parseFloat(temperature));
         this.sourceName = sourceName;
         this.humidity = String.format("%.1f", Float.parseFloat(humidity));
@@ -37,43 +32,40 @@ public class TemperatureData {
         try {
             this.date = dateFormatter.parse(split[0]);
             this.time = timeFormatter.parse(split[1]);
-        } catch (ParseException e){
+        } catch (ParseException e) {
             e.printStackTrace();
         }
         this.strTime = split[1].substring(0, 5);
-        this.weekDay = dayFormatter.format(this.date);
         this.week = Integer.parseInt(weekFormatter.format(this.date));
         this.month = Integer.parseInt(monthFormatter.format(this.date));
-        this.year = Integer.parseInt(yearFormatter.format(this.date));
-
     }
 
-    public String getValue(boolean getTemp){
-        if(getTemp)
+
+    String getValue(boolean getTemp) {
+        if (getTemp)
             return temperature;
         else
             return humidity;
     }
 
-    public String getSourceName() { return sourceName; }
 
-    public String  getTemperature() { return temperature; }
+    Date getDate() {
+        return date;
+    }
 
-    public String getTimeStamp() { return timeStamp; }
+    String getDateAsString() {
+        return dateFormatter.format(date);
+    }
 
-    public String getHumidity() { return humidity; }
+    int getWeek() {
+        return week;
+    }
 
-    public Date getDate() { return date; }
+    int getMonth() {
+        return month;
+    }
 
-    public String getDateAsString() { return dateFormatter.format(date); }
-
-    public Date getTime() { return time; }
-
-    public int getWeek() { return week; }
-
-    public int getMonth() { return month; }
-
-    public int getYear() { return year; }
-
-    public String getTimeAsString() { return strTime;}
+    String getTimeAsString() {
+        return strTime;
+    }
 }

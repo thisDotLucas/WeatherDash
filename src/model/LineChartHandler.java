@@ -308,7 +308,7 @@ public class LineChartHandler {
     }
 
 
-    public Date addDays(Date date, int days) {
+    private Date addDays(Date date, int days) {
         GregorianCalendar cal = new GregorianCalendar();
         cal.setTime(date);
         cal.add(Calendar.DATE, + days);
