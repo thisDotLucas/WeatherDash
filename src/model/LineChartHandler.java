@@ -226,8 +226,6 @@ public class LineChartHandler {
             XYChart.Data<String, Number> officialData = new XYChart.Data<>(new SimpleDateFormat("dd-MM").format(date), officialDayTempSum / count);
             XYChart.Data<String, Number> sensorData = new XYChart.Data<>(new SimpleDateFormat("dd-MM").format(date), sensorDayTempSum / count);
 
-            System.out.println(i);
-
             if(controller.getNodeCheckBox().isSelected()) {
                 officialData.setNode(new HoveredThresholdNode((i == 0) ? 0 : officialDayTempSum / count, sensorDayTempSum / count, new SimpleDateFormat("dd-MM").format(date), true));
                 sensorData.setNode(new HoveredThresholdNode((i == 0) ? 0 : sensorDayTempSum / count, officialDayTempSum / count, new SimpleDateFormat("dd-MM").format(date), false));
