@@ -5,10 +5,12 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.chart.LineChart;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyEvent;
 import javafx.util.StringConverter;
 import model.Json;
 import model.LineChartHandler;
@@ -163,6 +165,7 @@ public class WeatherDashController implements Initializable {
         addRadioButtonListener(radioButtons);
 
         radioTemperature.setSelected(true);
+        jumpTextField.addEventFilter(KeyEvent.ANY, handler);
         jumpTextField.setPromptText("1-31");
         dayLabel.setText("days.");
         monthLabel.setText("months.");
@@ -380,6 +383,29 @@ public class WeatherDashController implements Initializable {
             }
         });
     }
+
+
+    /**
+     * This handler prevents whitespaces from the user and key text fields.
+     */
+    private EventHandler<KeyEvent> handler = new EventHandler<KeyEvent>() {
+
+        private boolean willConsume = false;
+
+        @Override
+        public void handle(KeyEvent event) {
+
+            if(willConsume)
+                event.consume();
+
+
+            if(event.getCode().isWhitespaceKey())
+                willConsume = true;
+            else
+                willConsume = false;
+        }
+
+    };
 
 
     public ArrayList<TemperatureData> getData() {

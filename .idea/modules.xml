@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/WeatherDash.iml" filepath="$PROJECT_DIR$/.idea/WeatherDash.iml" />
-      <module fileurl="file://$PROJECT_DIR$/prog3_Uppg3.iml" filepath="$PROJECT_DIR$/prog3_Uppg3.iml" />
     </modules>
   </component>
 </project>
