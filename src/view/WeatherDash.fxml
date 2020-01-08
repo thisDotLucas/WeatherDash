@@ -46,7 +46,7 @@
                               <Font name="Ebrima" size="18.0" />
                            </font>
                            <HBox.margin>
-                              <Insets left="10.0" />
+                              <Insets left="15.0" />
                            </HBox.margin>
                         </Label>
                      </children>
@@ -58,13 +58,16 @@
                               <Font name="Ebrima" size="14.0" />
                            </font>
                            <VBox.margin>
-                              <Insets left="10.0" top="10.0" />
+                              <Insets left="15.0" top="10.0" />
                            </VBox.margin>
                         </Label>
                         <DatePicker fx:id="datePicker" onAction="#datePickerAction" style="-fx-background-color: transparent;">
                            <padding>
                               <Insets left="10.0" top="16.0" />
                            </padding>
+                           <VBox.margin>
+                              <Insets left="5.0" />
+                           </VBox.margin>
                         </DatePicker>
                      </children>
                   </VBox>
@@ -75,12 +78,12 @@
                               <Font size="14.0" />
                            </font>
                            <VBox.margin>
-                              <Insets bottom="16.0" left="10.0" top="10.0" />
+                              <Insets bottom="16.0" left="15.0" top="10.0" />
                            </VBox.margin>
                         </Label>
                         <ComboBox fx:id="showByComboBox" onAction="#comboBoxPickerAction" prefWidth="150.0" style="-fx-focus-color: #333645;">
                            <VBox.margin>
-                              <Insets left="10.0" />
+                              <Insets left="15.0" />
                            </VBox.margin>
                         </ComboBox>
                      </children>
@@ -91,6 +94,9 @@
                            <font>
                               <Font size="14.0" />
                            </font>
+                           <HBox.margin>
+                              <Insets left="5.0" />
+                           </HBox.margin>
                         </Label>
                         <ComboBox fx:id="monthComboBox" onAction="#onMonthComboBox" prefHeight="31.0" prefWidth="67.0">
                            <HBox.margin>
@@ -107,7 +113,7 @@
                         </Label>
                      </children>
                      <VBox.margin>
-                        <Insets left="10.0" />
+                        <Insets left="10.0" top="10.0" />
                      </VBox.margin>
                   </HBox>
                   <HBox fx:id="jumpBox" alignment="CENTER_LEFT" prefHeight="50.0" prefWidth="290.0">
@@ -117,7 +123,7 @@
                               <Font size="14.0" />
                            </font>
                            <HBox.margin>
-                              <Insets left="8.0" />
+                              <Insets left="13.0" />
                            </HBox.margin>
                         </Label>
                         <TextField fx:id="jumpTextField" prefHeight="31.0" prefWidth="49.0">
@@ -125,7 +131,7 @@
                               <Insets left="5.0" />
                            </HBox.margin>
                         </TextField>
-                        <Label fx:id="dayLabel" text="day." textFill="#7c8184">
+                        <Label fx:id="dayLabel" text="days." textFill="#7c8184">
                            <font>
                               <Font size="14.0" />
                            </font>
@@ -139,26 +145,26 @@
                      <children>
                         <Label text="Value:" textFill="#7c8184">
                            <VBox.margin>
-                              <Insets left="10.0" />
+                              <Insets left="15.0" top="7.0" />
                            </VBox.margin>
                            <font>
                               <Font size="14.0" />
                            </font>
                         </Label>
-                        <RadioButton fx:id="radioTemperature" mnemonicParsing="false" onAction="#radioTempAction" style="-fx-focus-color: #333645;" text="Temperature" textFill="#7c8184">
+                        <RadioButton fx:id="radioTemperature" mnemonicParsing="false" style="-fx-focus-color: #333645;" text="Temperature" textFill="#7c8184">
                            <padding>
                               <Insets left="10.0" />
                            </padding>
                            <VBox.margin>
-                              <Insets top="16.0" />
+                              <Insets left="5.0" top="13.0" />
                            </VBox.margin>
                            <font>
                               <Font name="Ebrima" size="14.0" />
                            </font>
                         </RadioButton>
-                        <RadioButton fx:id="radioHumidity" mnemonicParsing="false" onAction="#radioHumidityAction" style="-fx-focus-color: #333645;" text="Humidity" textFill="#7c8184">
+                        <RadioButton fx:id="radioHumidity" mnemonicParsing="false" style="-fx-focus-color: #333645;" text="Humidity" textFill="#7c8184">
                            <VBox.margin>
-                              <Insets top="13.0" />
+                              <Insets left="5.0" top="13.0" />
                            </VBox.margin>
                            <padding>
                               <Insets left="10.0" />
@@ -171,7 +177,7 @@
                   </VBox>
                   <CheckBox fx:id="nodeCheckBox" mnemonicParsing="false" onAction="#onNodeCheckBox" text="Show nodes" textFill="#7c8184">
                      <VBox.margin>
-                        <Insets left="10.0" />
+                        <Insets left="15.0" top="7.0" />
                      </VBox.margin>
                      <font>
                         <Font name="Ebrima" size="14.0" />

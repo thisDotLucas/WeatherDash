@@ -57,8 +57,8 @@ public class LineChartHandler {
 
 
             if(controller.getNodeCheckBox().isSelected()) {
-                officialData.setNode(new HoveredThresholdNode((i == 0) ? 0 : Float.parseFloat(data.get(i - 1).getValue(getTemp)), Float.parseFloat(data.get(i).getTemperature()), officialTempData.getTimeAsString(), true));
-                sensorData.setNode(new HoveredThresholdNode((i == 0) ? 0 : Float.parseFloat(data.get(i).getValue(getTemp)), Float.parseFloat(data.get(i - 1).getTemperature()), sensorTempData.getTimeAsString(), false));
+                officialData.setNode(new HoveredThresholdNode((i == 0) ? 0 : Float.parseFloat(data.get(i - 1).getValue(getTemp)), Float.parseFloat(data.get(i).getValue(getTemp)), officialTempData.getTimeAsString(), true));
+                sensorData.setNode(new HoveredThresholdNode((i == 0) ? 0 : Float.parseFloat(data.get(i).getValue(getTemp)), Float.parseFloat(data.get(i - 1).getValue(getTemp)), sensorTempData.getTimeAsString(), false));
             }
 
             officialValues.add(Float.parseFloat(officialTempData.getValue(getTemp)));
@@ -92,6 +92,8 @@ public class LineChartHandler {
 
     public void graphWeek() {
 
+        boolean getTemp = controller.isTemp();
+
         XYChart.Series officialSeries = new XYChart.Series();
         XYChart.Series sensorSeries = new XYChart.Series();
 
@@ -114,8 +116,8 @@ public class LineChartHandler {
                 TemperatureData officialTempData = data.get(i - 1);
                 TemperatureData sensorTempData = data.get(i);
 
-                officialDayTemps.add(Float.parseFloat(officialTempData.getTemperature()));
-                sensorDayTemps.add(Float.parseFloat(sensorTempData.getTemperature()));
+                officialDayTemps.add(Float.parseFloat(officialTempData.getValue(getTemp)));
+                sensorDayTemps.add(Float.parseFloat(sensorTempData.getValue(getTemp)));
 
                 i -= 2;
                 count++;
@@ -176,6 +178,8 @@ public class LineChartHandler {
 
     public void graphMonth(int nMonths, int jump){
 
+        boolean getTemp = controller.isTemp();
+
         XYChart.Series officialSeries = new XYChart.Series();
         XYChart.Series sensorSeries = new XYChart.Series();
 
@@ -198,8 +202,8 @@ public class LineChartHandler {
                 TemperatureData officialTempData = data.get(i - 1);
                 TemperatureData sensorTempData = data.get(i);
 
-                officialThreeDayTemps.add(Float.parseFloat(officialTempData.getTemperature()));
-                sensorThreeDayTemps.add(Float.parseFloat(sensorTempData.getTemperature()));
+                officialThreeDayTemps.add(Float.parseFloat(officialTempData.getValue(getTemp)));
+                sensorThreeDayTemps.add(Float.parseFloat(sensorTempData.getValue(getTemp)));
 
                 i -= jump;
                 count++;
@@ -358,7 +362,7 @@ public class LineChartHandler {
                         controller.getWeatherTempLabel().setText(String.format("%.1f", otherValue) + unit);
                         controller.getSensorTempLabel().setText(String.format("%.1f", value) + unit);
                     }
-                    controller.getShowingLabel().setText(controller.getShowingLabel().getText() + " " + time);
+                    controller.getShowingLabel().setText(controller.getShowingLabel().getText() + ", " + time);
                     controller.getDifTempLabel().setText(String.format("%.1f", Math.abs(value - otherValue)) + unit);
                 }
             });
@@ -369,7 +373,7 @@ public class LineChartHandler {
                     controller.getWeatherTempLabel().setText(weatherApiAverage);
                     controller.getSensorTempLabel().setText(sensorAverage);
                     controller.getDifTempLabel().setText(diffAverage);
-                    controller.getShowingLabel().setText(controller.getShowingLabel().getText().replaceAll(" " + time, ""));
+                    controller.getShowingLabel().setText(controller.getShowingLabel().getText().replaceAll(", " + time, ""));
                 }
             });
         }
