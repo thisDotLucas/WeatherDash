@@ -7,10 +7,7 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
-
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.TemporalField;
 import java.time.temporal.WeekFields;
@@ -24,20 +21,28 @@ public class LineChartHandler {
     private String weatherApiAverage;
     private String sensorAverage;
     private String diffAverage;
+    private String unit;
 
     public LineChartHandler(WeatherDashController controller){
         this.controller = controller;
         this.data = controller.getData();
+        if(controller.isTemp()) {
+            unit = "°C";
+        } else {
+            unit = "%";
+        }
     }
 
 
     public void graphDay() {
 
+        boolean getTemp = controller.isTemp();
+
         XYChart.Series officialSeries = new XYChart.Series();
         XYChart.Series sensorSeries = new XYChart.Series();
 
-        ArrayList<Float> officialTemps = new ArrayList<>();
-        ArrayList<Float> sensorTemps = new ArrayList<>();
+        ArrayList<Float> officialValues = new ArrayList<>();
+        ArrayList<Float> sensorValues = new ArrayList<>();
 
         int i = getDayStartIndex();
         int count = 0;
@@ -47,14 +52,17 @@ public class LineChartHandler {
             TemperatureData officialTempData = data.get(i - 1);
             TemperatureData sensorTempData = data.get(i);
 
-            XYChart.Data<String, Number> officialData = new XYChart.Data<>(officialTempData.getTimeAsString(), Float.parseFloat(officialTempData.getTemperature()));
-            XYChart.Data<String, Number> sensorData = new XYChart.Data<>(sensorTempData.getTimeAsString(), Float.parseFloat(sensorTempData.getTemperature()));
+            XYChart.Data<String, Number> officialData = new XYChart.Data<>(officialTempData.getTimeAsString(), Float.parseFloat(officialTempData.getValue(getTemp)));
+            XYChart.Data<String, Number> sensorData = new XYChart.Data<>(sensorTempData.getTimeAsString(), Float.parseFloat(sensorTempData.getValue(getTemp)));
 
-            officialData.setNode(new HoveredThresholdNode((i == 0) ? 0 : Float.parseFloat(data.get(i - 1).getTemperature()), Float.parseFloat(data.get(i).getTemperature()), officialTempData.getTimeAsString(), true));
-            sensorData.setNode(new HoveredThresholdNode((i == 0) ? 0 : Float.parseFloat(data.get(i).getTemperature()), Float.parseFloat(data.get(i - 1).getTemperature()), sensorTempData.getTimeAsString(), false));
 
-            officialTemps.add(Float.parseFloat(officialTempData.getTemperature()));
-            sensorTemps.add(Float.parseFloat(sensorTempData.getTemperature()));
+            if(controller.getNodeCheckBox().isSelected()) {
+                officialData.setNode(new HoveredThresholdNode((i == 0) ? 0 : Float.parseFloat(data.get(i - 1).getValue(getTemp)), Float.parseFloat(data.get(i).getTemperature()), officialTempData.getTimeAsString(), true));
+                sensorData.setNode(new HoveredThresholdNode((i == 0) ? 0 : Float.parseFloat(data.get(i).getValue(getTemp)), Float.parseFloat(data.get(i - 1).getTemperature()), sensorTempData.getTimeAsString(), false));
+            }
+
+            officialValues.add(Float.parseFloat(officialTempData.getValue(getTemp)));
+            sensorValues.add(Float.parseFloat(sensorTempData.getValue(getTemp)));
 
             officialSeries.getData().add(officialData);
             sensorSeries.getData().add(sensorData);
@@ -66,16 +74,16 @@ public class LineChartHandler {
         float officialTempSum = 0;
         float sensorTempSum = 0;
 
-        for(float x : officialTemps)
+        for(float x : officialValues)
             officialTempSum += x;
 
-        for(float y : sensorTemps)
+        for(float y : sensorValues)
             sensorTempSum += y;
 
         controller.getChart().getData().addAll(officialSeries, sensorSeries);
-        controller.getWeatherTempLabel().setText(String.format("%.1f", officialTempSum / count) + "°C");
-        controller.getSensorTempLabel().setText(String.format("%.1f", sensorTempSum / count) + "°C");
-        controller.getDifTempLabel().setText(String.format("%.1f", Math.abs(officialTempSum/count - sensorTempSum/count)) + "°C");
+        controller.getWeatherTempLabel().setText(String.format("%.1f", officialTempSum / count) + unit);
+        controller.getSensorTempLabel().setText(String.format("%.1f", sensorTempSum / count) + unit);
+        controller.getDifTempLabel().setText(String.format("%.1f", Math.abs((officialTempSum - sensorTempSum)/count)) + unit);
         weatherApiAverage = controller.getWeatherTempLabel().getText();
         sensorAverage = controller.getSensorTempLabel().getText();
         diffAverage = controller.getDifTempLabel().getText();
@@ -129,8 +137,10 @@ public class LineChartHandler {
             XYChart.Data<String, Number> officialData = new XYChart.Data<>(new SimpleDateFormat("EEEE").format(date), officialDayTempSum / count);
             XYChart.Data<String, Number> sensorData = new XYChart.Data<>(new SimpleDateFormat("EEEE").format(date), sensorDayTempSum / count);
 
-            officialData.setNode(new HoveredThresholdNode((i == 0) ? 0 : officialDayTempSum / count, sensorDayTempSum / count, new SimpleDateFormat("EEEE").format(date), true));
-            sensorData.setNode(new HoveredThresholdNode((i == 0) ? 0 : sensorDayTempSum / count, officialDayTempSum / count, new SimpleDateFormat("EEEE").format(date), false));
+            if(controller.getNodeCheckBox().isSelected()) {
+                officialData.setNode(new HoveredThresholdNode((i == 0) ? 0 : officialDayTempSum / count, sensorDayTempSum / count, new SimpleDateFormat("EEEE").format(date), true));
+                sensorData.setNode(new HoveredThresholdNode((i == 0) ? 0 : sensorDayTempSum / count, officialDayTempSum / count, new SimpleDateFormat("EEEE").format(date), false));
+            }
 
             officialSeries.getData().add(officialData);
             sensorSeries.getData().add(sensorData);
@@ -154,10 +164,10 @@ public class LineChartHandler {
             sensorTempSum += y;
 
         controller.getChart().getData().addAll(officialSeries, sensorSeries);
-        controller.getWeatherTempLabel().setText(String.format("%.1f", officialTempSum / officialTemps.size()) + "°C");
-        controller.getSensorTempLabel().setText(String.format("%.1f", sensorTempSum / officialTemps.size()) + "°C");
-        controller.getDifTempLabel().setText(String.format("%.1f", Math.abs((officialTempSum - sensorTempSum))/officialTemps.size()) + "°C");
-        controller.getDifTempLabel().setText(String.format("%.1f", Math.abs((officialTempSum - sensorTempSum))/officialTemps.size()) + "°C");
+        controller.getWeatherTempLabel().setText(String.format("%.1f", officialTempSum / officialTemps.size()) + unit);
+        controller.getSensorTempLabel().setText(String.format("%.1f", sensorTempSum / officialTemps.size()) + unit);
+        controller.getDifTempLabel().setText(String.format("%.1f", Math.abs((officialTempSum - sensorTempSum))/officialTemps.size()) + unit);
+        controller.getDifTempLabel().setText(String.format("%.1f", Math.abs((officialTempSum - sensorTempSum))/officialTemps.size()) + unit);
         weatherApiAverage = controller.getWeatherTempLabel().getText();
         sensorAverage = controller.getSensorTempLabel().getText();
         diffAverage = controller.getDifTempLabel().getText();
@@ -210,8 +220,10 @@ public class LineChartHandler {
             XYChart.Data<String, Number> officialData = new XYChart.Data<>(new SimpleDateFormat("dd-MM").format(date), officialDayTempSum / count);
             XYChart.Data<String, Number> sensorData = new XYChart.Data<>(new SimpleDateFormat("dd-MM").format(date), sensorDayTempSum / count);
 
-            officialData.setNode(new HoveredThresholdNode((i == 0) ? 0 : officialDayTempSum / count, sensorDayTempSum / count, new SimpleDateFormat("dd-MM").format(date), true));
-            sensorData.setNode(new HoveredThresholdNode((i == 0) ? 0 : sensorDayTempSum / count, officialDayTempSum / count, new SimpleDateFormat("dd-MM").format(date), false));
+            if(controller.getNodeCheckBox().isSelected()) {
+                officialData.setNode(new HoveredThresholdNode((i == 0) ? 0 : officialDayTempSum / count, sensorDayTempSum / count, new SimpleDateFormat("dd-MM").format(date), true));
+                sensorData.setNode(new HoveredThresholdNode((i == 0) ? 0 : sensorDayTempSum / count, officialDayTempSum / count, new SimpleDateFormat("dd-MM").format(date), false));
+            }
 
             officialSeries.getData().add(officialData);
             sensorSeries.getData().add(sensorData);
@@ -233,9 +245,9 @@ public class LineChartHandler {
             sensorTempSum += y;
 
         controller.getChart().getData().addAll(officialSeries, sensorSeries);
-        controller.getWeatherTempLabel().setText(String.format("%.1f", officialTempSum / officialTemps.size()) + "°C");
-        controller.getSensorTempLabel().setText(String.format("%.1f", sensorTempSum / officialTemps.size()) + "°C");
-        controller.getDifTempLabel().setText(String.format("%.1f", Math.abs((officialTempSum - sensorTempSum))/officialTemps.size()) + "°C");
+        controller.getWeatherTempLabel().setText(String.format("%.1f", officialTempSum / officialTemps.size()) + unit);
+        controller.getSensorTempLabel().setText(String.format("%.1f", sensorTempSum / officialTemps.size()) + unit);
+        controller.getDifTempLabel().setText(String.format("%.1f", Math.abs((officialTempSum - sensorTempSum))/officialTemps.size()) + unit);
         weatherApiAverage = controller.getWeatherTempLabel().getText();
         sensorAverage = controller.getSensorTempLabel().getText();
         diffAverage = controller.getDifTempLabel().getText();
@@ -340,14 +352,14 @@ public class LineChartHandler {
                     setCursor(Cursor.NONE);
                     toFront();
                     if(isOfficial) {
-                        controller.getWeatherTempLabel().setText(String.format("%.1f", value) + "°C");
-                        controller.getSensorTempLabel().setText(String.format("%.1f", otherValue) + "°C");
+                        controller.getWeatherTempLabel().setText(String.format("%.1f", value) + unit);
+                        controller.getSensorTempLabel().setText(String.format("%.1f", otherValue) + unit);
                     } else {
-                        controller.getWeatherTempLabel().setText(String.format("%.1f", otherValue) + "°C");
-                        controller.getSensorTempLabel().setText(String.format("%.1f", value) + "°C");
+                        controller.getWeatherTempLabel().setText(String.format("%.1f", otherValue) + unit);
+                        controller.getSensorTempLabel().setText(String.format("%.1f", value) + unit);
                     }
                     controller.getShowingLabel().setText(controller.getShowingLabel().getText() + " " + time);
-                    controller.getDifTempLabel().setText(String.format("%.1f", Math.abs(value - otherValue)) + "°C");
+                    controller.getDifTempLabel().setText(String.format("%.1f", Math.abs(value - otherValue)) + unit);
                 }
             });
             setOnMouseExited(new EventHandler<MouseEvent>() {
@@ -363,7 +375,7 @@ public class LineChartHandler {
         }
 
         private Label createDataThresholdLabel(float value, String color) {
-            final Label label = new Label(String.format("%.1f", value) + "°C");
+            final Label label = new Label(String.format("%.1f", value) + unit);
             label.getStyleClass().addAll(color, "chart-line-symbol", "chart-series-line");
             label.setStyle("-fx-font-size: 14;");
 

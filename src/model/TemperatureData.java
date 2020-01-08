@@ -48,6 +48,12 @@ public class TemperatureData {
 
     }
 
+    public String getValue(boolean getTemp){
+        if(getTemp)
+            return temperature;
+        else
+            return humidity;
+    }
 
     public String getSourceName() { return sourceName; }
 

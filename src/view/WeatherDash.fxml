@@ -92,7 +92,7 @@
                               <Font size="14.0" />
                            </font>
                         </Label>
-                        <ComboBox fx:id="monthComboBox" onAction="#onMonthComboBox" onMouseClicked="#onMonthComboBoxClick" prefHeight="31.0" prefWidth="67.0">
+                        <ComboBox fx:id="monthComboBox" onAction="#onMonthComboBox" prefHeight="31.0" prefWidth="67.0">
                            <HBox.margin>
                               <Insets left="5.0" right="5.0" />
                            </HBox.margin>
@@ -169,6 +169,14 @@
                         </RadioButton>
                      </children>
                   </VBox>
+                  <CheckBox fx:id="nodeCheckBox" mnemonicParsing="false" onAction="#onNodeCheckBox" text="Show nodes" textFill="#7c8184">
+                     <VBox.margin>
+                        <Insets left="10.0" />
+                     </VBox.margin>
+                     <font>
+                        <Font name="Ebrima" size="14.0" />
+                     </font>
+                  </CheckBox>
                </children></VBox>
             <Pane fx:id="head" layoutX="289.0" prefHeight="79.0" prefWidth="902.0" style="-fx-background-color: #ffffff;">
                <children>

@@ -27,8 +27,7 @@ import java.util.*;
 public class WeatherDashController implements Initializable {
 
     private ArrayList<TemperatureData> data;
-    private boolean radiotemp = true;
-    private boolean radioHum;
+    private boolean isTemp;
 
     //Labels
     @FXML
@@ -51,6 +50,9 @@ public class WeatherDashController implements Initializable {
     public Label jumpOfLabel;
     @FXML
     public Label theLastLabel;
+
+    @FXML
+    public CheckBox nodeCheckBox;
 
     @FXML
     public ComboBox<Integer> monthComboBox;
@@ -120,9 +122,7 @@ public class WeatherDashController implements Initializable {
     }
 
     @FXML
-    public void onMonthComboBoxClick(){
-
-    }
+    public void onNodeCheckBox(){ updateChart(); }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -151,8 +151,8 @@ public class WeatherDashController implements Initializable {
         onlyNumbers(jumpTextField);
         showMonthSettings(false);
         setMonthComboBoxItems();
-
-
+        radioTempAction();
+        radioTemperature.setSelected(true);
     }
 
     private void setMonthComboBoxItems() {
@@ -175,6 +175,8 @@ public class WeatherDashController implements Initializable {
     private void setLoadingState(){
         showByComboBox.setDisable(true);
         datePicker.setDisable(true);
+        radioTemperature.setDisable(true);
+        radioHumidity.setDisable(true);
         headLabel.setText("Loading Data ...");
         showingLabel.setText("");
     }
@@ -182,6 +184,8 @@ public class WeatherDashController implements Initializable {
     private void setLoadedState(){
         showByComboBox.setDisable(false);
         datePicker.setDisable(false);
+        radioTemperature.setDisable(false);
+        radioHumidity.setDisable(false);
         headLabel.setText("Showing:");
         showingLabel.setText("");
     }
@@ -310,6 +314,8 @@ public class WeatherDashController implements Initializable {
 
     public ComboBox<Integer> getMonthComboBox() { return monthComboBox; }
 
+    public CheckBox getNodeCheckBox(){ return nodeCheckBox; }
+
     public TextField getJumpTextField() {return jumpTextField; }
 
     public Label getWeatherTempLabel(){ return weatherTempLabel; }
@@ -320,16 +326,14 @@ public class WeatherDashController implements Initializable {
 
     public Label getShowingLabel(){ return showingLabel; }
 
-
+    public boolean isTemp() { return isTemp; }
 
     @FXML
     public void radioTempAction(){
-       radioHumidity.setSelected(false);
-       radiotemp = true;
-       radioHum = false;
-       chart.getData().clear();
-       //initGraph();
-       //saveAvg();
+        radioHumidity.setSelected(false);
+        isTemp = true;
+        updateChart();
+        chart.getYAxis().setLabel("Temperature °C");
     }
 
 
@@ -338,11 +342,10 @@ public class WeatherDashController implements Initializable {
     @FXML
     public void radioHumidityAction(){
         radioTemperature.setSelected(false);
-        radioHum = true;
-        radiotemp = false;
-        chart.getData().clear();
-        //initGraph();
-        //saveAvg();
+        isTemp = false;
+        updateChart();
+        chart.getYAxis().setLabel("Humidity %");
+
     }
 
 }
