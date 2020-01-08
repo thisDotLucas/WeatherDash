@@ -178,13 +178,15 @@ public class LineChartHandler {
 
     public void graphMonth(int nMonths, int jump){
 
+        assert jump % 2 == 0: "Jump value must be a even integer.";
+
         boolean getTemp = controller.isTemp();
 
         XYChart.Series officialSeries = new XYChart.Series();
         XYChart.Series sensorSeries = new XYChart.Series();
 
-        ArrayList<Float> officialThreeDayTemps = new ArrayList<>();
-        ArrayList<Float> sensorThreeDayTemps = new ArrayList<>();
+        ArrayList<Float> officialJumpDayTemps = new ArrayList<>();
+        ArrayList<Float> sensorJumpDayTemps = new ArrayList<>();
 
         ArrayList<Float> officialTemps = new ArrayList<>();
         ArrayList<Float> sensorTemps = new ArrayList<>();
@@ -202,8 +204,8 @@ public class LineChartHandler {
                 TemperatureData officialTempData = data.get(i - 1);
                 TemperatureData sensorTempData = data.get(i);
 
-                officialThreeDayTemps.add(Float.parseFloat(officialTempData.getValue(getTemp)));
-                sensorThreeDayTemps.add(Float.parseFloat(sensorTempData.getValue(getTemp)));
+                officialJumpDayTemps.add(Float.parseFloat(officialTempData.getValue(getTemp)));
+                sensorJumpDayTemps.add(Float.parseFloat(sensorTempData.getValue(getTemp)));
 
                 i -= jump;
                 count++;
@@ -212,10 +214,10 @@ public class LineChartHandler {
             float officialDayTempSum = 0;
             float sensorDayTempSum = 0;
 
-            for(float x : officialThreeDayTemps)
+            for(float x : officialJumpDayTemps)
                 officialDayTempSum += x;
 
-            for(float y : sensorThreeDayTemps)
+            for(float y : sensorJumpDayTemps)
                 sensorDayTempSum += y;
 
             officialTemps.add(officialDayTempSum / count);
@@ -223,6 +225,8 @@ public class LineChartHandler {
 
             XYChart.Data<String, Number> officialData = new XYChart.Data<>(new SimpleDateFormat("dd-MM").format(date), officialDayTempSum / count);
             XYChart.Data<String, Number> sensorData = new XYChart.Data<>(new SimpleDateFormat("dd-MM").format(date), sensorDayTempSum / count);
+
+            System.out.println(i);
 
             if(controller.getNodeCheckBox().isSelected()) {
                 officialData.setNode(new HoveredThresholdNode((i == 0) ? 0 : officialDayTempSum / count, sensorDayTempSum / count, new SimpleDateFormat("dd-MM").format(date), true));
@@ -232,8 +236,8 @@ public class LineChartHandler {
             officialSeries.getData().add(officialData);
             sensorSeries.getData().add(sensorData);
 
-            officialThreeDayTemps.clear();
-            sensorThreeDayTemps.clear();
+            officialJumpDayTemps.clear();
+            sensorJumpDayTemps.clear();
 
             count = 0;
             date = addDays(date, jump/2);
@@ -316,13 +320,21 @@ public class LineChartHandler {
         return cal.getTime();
     }
 
-    private ArrayList<Integer> getMonths(Date date, int n){
+    private ArrayList<Integer> getMonths(Date date, int n) {
 
         ArrayList<Integer> months = new ArrayList<>();
         int month = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate().getMonthValue();
 
-        for(int i = 0; i < n; i++)
+        for (int i = 0; i < n; i++){
+
+            if (month + i > 12) {
+                month = 1;
+                i = 0;
+            }
+
             months.add(month + i);
+
+        }
 
         return months;
     }
