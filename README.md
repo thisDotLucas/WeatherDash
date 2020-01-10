@@ -15,6 +15,8 @@ VCS -> Git -> Clone -> insert URL
 <li>Lucas Fransman, made the JavaFx application and collaborated with the Arduino.</li>
 <li>Maxemillian Grönblom, made our custom API and collaborated with the Arduino.</li>
 
+## Screenshots
+
 ### Month view
 
 ![WeatherDash1](https://user-images.githubusercontent.com/43991152/72160393-f2e73000-33c6-11ea-8d68-126b7c2f2440.png)
