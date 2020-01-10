@@ -4,6 +4,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+/**
+ * This object stores the needed values for each individual hour in the json data.
+ */
 public class TemperatureData {
 
     private SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
@@ -47,7 +50,6 @@ public class TemperatureData {
         else
             return humidity;
     }
-
 
     Date getDate() {
         return date;

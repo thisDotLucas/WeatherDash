@@ -23,6 +23,10 @@ public class LineChartHandler {
     private String diffAverage;
     private String unit;
 
+    /**
+     * We get all the data from the controller which is given as an argument. The unit is set according
+     * to what we want to display.
+     */
     public LineChartHandler(WeatherDashController controller){
         this.controller = controller;
         this.data = controller.getData();
@@ -33,7 +37,12 @@ public class LineChartHandler {
         }
     }
 
-
+    /**
+     * We go through the 24 hours in the day or less if current day is chosen. All of these values are put into ArrayLists
+     * and graphed. When all values are graphed we calculate the average temperature for both the api and sensor values + the
+     * average difference. Individual values are also available via the hoverable nodes which are also created if the node check
+     * box is checked.
+     */
     public void graphDay() {
 
         boolean getTemp = controller.isTemp();
@@ -89,7 +98,11 @@ public class LineChartHandler {
         diffAverage = controller.getDifTempLabel().getText();
     }
 
-
+    /**
+     * We go through the days in the week and their 24 hours. All days average temperatures or humidities are calculated and
+     * put into another ArrayList. These values are then graphed and their average values and difference calculated. Individual
+     * values are also available via the hoverable nodes which are also created if the node check box is checked.
+     */
     public void graphWeek() {
 
         boolean getTemp = controller.isTemp();
@@ -175,7 +188,10 @@ public class LineChartHandler {
         diffAverage = controller.getDifTempLabel().getText();
     }
 
-
+    /**
+     * We go through the days in the months that we want and calculate their averages. They are put into an ArrayList, these values are then graphed and
+     * their averages are calculated. Individual values are also available via the hoverable nodes which are also created if the node check box is checked.
+     */
     public void graphMonth(int nMonths, int jump){
 
         assert jump % 2 == 0: "Jump value must be a even integer.";
@@ -259,24 +275,11 @@ public class LineChartHandler {
         diffAverage = controller.getDifTempLabel().getText();
     }
 
-
-    private int getMonthStartIndex(int n){
-        int month = controller.getDatePicker().getValue().getMonthValue() - (n - 1);
-
-        if(month <= 0)
-            month = 12 + month;
-
-        int i = 0;
-
-        while (data.get(i).getMonth() != month)
-            i++;
-
-        while (data.get(i).getMonth() == month)
-            i++;
-
-        return --i;
-    }
-
+    /**
+     * We keep on going forward in thew list until we reach the date we are seeking. At this point we are at the end of the day we want.
+     * So now we keep on going forward until we are no longer at the date given. At this point we are at the end of the day before the first
+     * hour of the date we are looking for so now we can return the current index - 1.
+     */
     private int getDayStartIndex(){
 
         String date = controller.getDatePicker().getValue().toString();
@@ -292,6 +295,11 @@ public class LineChartHandler {
         return --i;
     }
 
+    /**
+     * We keep on going forward in thew list until we reach the week number we are seeking. At this point we are at the end of the week we want.
+     * So now we keep on going forward until we are no longer at the week given. At this point we are at the end of the week before the first
+     * day and hour of the week we are looking for so now we can return the current index - 1.
+     */
     private int getWeekStartIndex(){
 
         TemporalField woy = WeekFields.of(Locale.getDefault()).weekOfWeekBasedYear();
@@ -309,7 +317,31 @@ public class LineChartHandler {
 
     }
 
+    /**
+     * We keep on going forward in thew list until we reach the month we are seeking. At this point we are at the end of the month we want.
+     * So now we keep on going forward until we are no longer at the month given. At this point we are at the end of the month before the first
+     * day and hour of the month we are looking for so now we can return the current index - 1.
+     */
+    private int getMonthStartIndex(int n){
+        int month = controller.getDatePicker().getValue().getMonthValue() - (n - 1);
 
+        if(month <= 0)
+            month = 12 + month;
+
+        int i = 0;
+
+        while (data.get(i).getMonth() != month)
+            i++;
+
+        while (data.get(i).getMonth() == month)
+            i++;
+
+        return --i;
+    }
+
+    /**
+     * Adds the amount of days to the date given as an argument by the days given as an argument.
+     */
     private Date addDays(Date date, int days) {
         GregorianCalendar cal = new GregorianCalendar();
         cal.setTime(date);
@@ -318,6 +350,9 @@ public class LineChartHandler {
         return cal.getTime();
     }
 
+    /**
+     * Gets the month numbers we are interested in and puts them in in an ArrayList.
+     */
     private ArrayList<Integer> getMonths(Date date, int n) {
 
         ArrayList<Integer> months = new ArrayList<>();
@@ -337,6 +372,9 @@ public class LineChartHandler {
         return months;
     }
 
+    /**
+     * Puts the dates in the given day jump in an ArrayList.
+     */
     private ArrayList<String> getDates(Date date, int n){
 
         ArrayList<String> dates = new ArrayList<>();
@@ -347,6 +385,9 @@ public class LineChartHandler {
         return dates;
     }
 
+    /**
+     * This class creates the nodes with the hovering functionality.
+     */
     class HoveredThresholdNode extends StackPane {
         HoveredThresholdNode(float value, float otherValue, String time, boolean isOfficial) {
             setPrefSize(10, 10);

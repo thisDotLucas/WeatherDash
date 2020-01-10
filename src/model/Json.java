@@ -9,7 +9,10 @@ import java.util.ArrayList;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-
+/**
+ * This class gets the jason data and makes them into TemperatureData objects and stores them
+ * in an ArrayList. Api data is stored on uneven indexes and sensor data on even indexes.
+ */
 public class Json {
 
     private final static String START_DATE = "2019-05-31";
