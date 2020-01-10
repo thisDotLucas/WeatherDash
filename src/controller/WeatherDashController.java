@@ -5,10 +5,12 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.chart.LineChart;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyEvent;
 import javafx.util.StringConverter;
 import model.Json;
 import model.LineChartHandler;
@@ -106,22 +108,27 @@ public class WeatherDashController implements Initializable {
     @FXML
     private void onMonthComboBox() {
 
-        try {
-            if (monthComboBox.getValue() > 1)
-                monthLabel.setText("months.");
-            else
-                monthLabel.setText("month.");
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    if (monthComboBox.getValue() > 1)
+                        monthLabel.setText("months.");
+                    else
+                        monthLabel.setText("month.");
 
-            if (jumpTextField.getText().equals(""))
-                jumpTextField.setText("3");
+                    if (jumpTextField.getText().equals(""))
+                        jumpTextField.setText("3");
 
-            monthValue = monthComboBox.getValue();
+                    monthValue = monthComboBox.getValue();
 
-            updateChart();
+                    updateChart();
 
-        } catch (NullPointerException e) {
-            monthLabel.setText("month.");
-        }
+                } catch (NullPointerException e) {
+                    monthLabel.setText("month.");
+                }
+            }
+        });
     }
 
     /**
@@ -178,6 +185,7 @@ public class WeatherDashController implements Initializable {
         addRadioButtonListener(radioButtons);
 
         radioTemperature.setSelected(true);
+        jumpTextField.addEventFilter(KeyEvent.ANY, handler);
         jumpTextField.setPromptText("1-31");
         dayLabel.setText("days.");
         monthLabel.setText("months.");
@@ -218,6 +226,7 @@ public class WeatherDashController implements Initializable {
         } else {
             headLabel.setText("Showing:");
             showingLabel.setText("");
+            jumpTextField.setText("3");
         }
     }
 
@@ -420,6 +429,29 @@ public class WeatherDashController implements Initializable {
             }
         });
     }
+
+
+    /**
+     * This handler prevents whitespaces from the user and key text fields.
+     */
+    private EventHandler<KeyEvent> handler = new EventHandler<KeyEvent>() {
+
+        private boolean willConsume = false;
+
+        @Override
+        public void handle(KeyEvent event) {
+
+            if(willConsume)
+                event.consume();
+
+
+            if(event.getCode().isWhitespaceKey())
+                willConsume = true;
+            else
+                willConsume = false;
+        }
+
+    };
 
 
     public ArrayList<TemperatureData> getData() {
