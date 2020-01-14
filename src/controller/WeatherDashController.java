@@ -277,7 +277,7 @@ public class WeatherDashController implements Initializable {
     private void initDatePicker() {
 
         datePicker.setEditable(false);
-        datePicker.setValue(new TimeAndDateHelper().getDate().toLocalDate());
+        datePicker.setValue(LocalDate.of(2020, 1, 9));
         datePicker.setConverter(new StringConverter<LocalDate>() {
 
             private DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -302,7 +302,7 @@ public class WeatherDashController implements Initializable {
             @Override
             public void updateItem(LocalDate date, boolean empty) {
                 super.updateItem(date, empty);
-                setDisable(date.isBefore(LocalDate.of(2019, 6, 1)) || date.compareTo(LocalDate.now()) > 0);
+                setDisable(date.isBefore(LocalDate.of(2019, 6, 1)) || date.compareTo(LocalDate.now()) > 0 || date.isAfter(LocalDate.of(2020, 1, 9)));
             }
         });
 
