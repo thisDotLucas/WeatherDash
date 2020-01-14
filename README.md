@@ -3,7 +3,7 @@
 Weather Dash is a graphical user interface that graphs temperature and humidity data from the OpenWeatherMap API and compares it to an arduino sensor.
 
 #### Note
- Data is available from june 2019.
+Sensor data is available from 1.6.2019 - 9.1.202.
 The suprisingly big difference in temperatures is caused by the sensor being located on a balcony surronded by glass panels. Our sensor has had problems with humidity since November.
 ## How to install
 ### Eclipse
