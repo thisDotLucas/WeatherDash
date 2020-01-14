@@ -27,11 +27,11 @@ import java.util.*;
 
 public class WeatherDashController implements Initializable {
 
-    private ArrayList<TemperatureData> data;
-    private boolean isTemp;
-    private boolean isLoading;
-    private int monthValue;
-    private int jumpValue;
+    private ArrayList<TemperatureData> data; //Temperature and humidity data from both the api and the sensor. api data on uneven indexes and node data on even indexes.
+    private boolean isTemp; //If true temperature is displayed else humidity.
+    private boolean isLoading; //If true json data is not loaded.
+    private int monthValue; //Default value is 1
+    private int jumpValue; //Default value is 3
 
     @FXML
     private Label headLabel;
@@ -61,13 +61,13 @@ public class WeatherDashController implements Initializable {
     private ComboBox<Integer> monthComboBox;
 
     @FXML
+    private ComboBox showByComboBox;
+
+    @FXML
     private TextField jumpTextField;
 
     @FXML
     private DatePicker datePicker;
-
-    @FXML
-    private ComboBox showByComboBox;
 
     @FXML
     private LineChart<String, Number> chart;
@@ -79,6 +79,10 @@ public class WeatherDashController implements Initializable {
     private RadioButton radioHumidity;
 
 
+    /**
+     * This method fires when the user switches the date in the date picker. The chart and month
+     * combobox will get updated accordingly.
+     */
     @FXML
     private void datePickerAction() {
         if (showByComboBox.getValue() != null) {
@@ -89,13 +93,18 @@ public class WeatherDashController implements Initializable {
     }
 
 
-    //Updates values when using combo box
+    /**
+     * This method fires when the show by combobox value is changed and updates the chart.
+     */
     @FXML
-    private void comboBoxPickerAction() {
+    private void showByComboBoxAction() {
         updateChart();
     }
 
-
+    /**
+     * This method fires when the value in the month combobox is changed. The month label is updated to "label" if one
+     * month and if more "months", the monthValue variable and the chart is updated.
+     */
     @FXML
     private void onMonthComboBox() {
 
@@ -122,13 +131,19 @@ public class WeatherDashController implements Initializable {
         });
     }
 
-
+    /**
+     * This method fires when the show nodes checkbox is checked or unchecked. If checked hoverable nodes will
+     * be shown else nodes will not be shown.
+     */
     @FXML
     private void onNodeCheckBox() {
         updateChart();
     }
 
-
+    /**
+     * On initialization the json data is fetched in a separate thread while the thread is running the isLoading variable is true.
+     * All variables are set to the default values and the javafx elements are given listeners and set to starting states.
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
@@ -176,7 +191,10 @@ public class WeatherDashController implements Initializable {
         monthLabel.setText("months.");
     }
 
-
+    /**
+     * In this method the difference in months from where the data was started to be collected from the current
+     * chosen month. The month combo box is then updated so you cannot get months where no data exist.
+     */
     private void setMonthComboBoxItems() {
         monthComboBox.getItems().clear();
 
@@ -193,7 +211,9 @@ public class WeatherDashController implements Initializable {
 
     }
 
-
+    /**
+     * This method disables all input options when the data is still loading.
+     */
     private void setState() {
         showByComboBox.setDisable(isLoading);
         datePicker.setDisable(isLoading);
@@ -211,6 +231,9 @@ public class WeatherDashController implements Initializable {
     }
 
 
+    /**
+     * Initializes the line chart.
+     */
     private void initLineChart() {
         chart.getStylesheets().add("view/linechart.css");
         chart.setAnimated(false);
@@ -218,7 +241,10 @@ public class WeatherDashController implements Initializable {
         chart.setCreateSymbols(false);
     }
 
-
+    /**
+     * This updates the chart according to the user inputted parameters and enables/disables
+     * JavaFx elements.
+     */
     private void updateChart() {
         if (showByComboBox.getValue() != null) {
             chart.getData().clear();
@@ -246,6 +272,10 @@ public class WeatherDashController implements Initializable {
         }
     }
 
+    /**
+     * Gets the text for the label to be shown when choosing many months. For example if december is chosen with a jump of 2 months
+     * the string that is returned is October-November.
+     */
     private String getMonthLabelText() {
         Month month = datePicker.getValue().getMonth();
         Month prevMonth = month.minus(monthValue - 1);
@@ -259,13 +289,18 @@ public class WeatherDashController implements Initializable {
             return strPrevMonth.substring(0, 1) + strPrevMonth.substring(1, strPrevMonth.length()).toLowerCase() + " - " + strMonth.substring(0, 1) + strMonth.substring(1, strMonth.length()).toLowerCase();
     }
 
-
+    /**
+     * Disables the jump textfield and month combobox when not in show by
+     * months mode.
+     */
     private void disableMonthSettings(boolean disable) {
         jumpTextField.setDisable(disable);
         monthComboBox.setDisable(disable);
     }
 
-
+    /**
+     * Sets the month and jump variables to their default values.
+     */
     private void resetMonthValues() {
         monthValue = 1;
         jumpValue = 3;
@@ -273,7 +308,9 @@ public class WeatherDashController implements Initializable {
         jumpTextField.setText(Integer.toString(jumpValue));
     }
 
-
+    /**
+     * sets the date format and disables dates where no data is available.
+     */
     private void initDatePicker() {
 
         datePicker.setEditable(false);
@@ -308,12 +345,15 @@ public class WeatherDashController implements Initializable {
 
     }
 
-
+    /**
+     * Listener for the group of radio buttons, disable the radio button that is already chosen and
+     * sets the y axis label in the chart accordingly.
+     */
     private void addRadioButtonListener(ToggleGroup radioButtons) {
         radioButtons.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
             public void changed(ObservableValue<? extends Toggle> ov, Toggle old_toggle, Toggle new_toggle) {
 
-                if (isLoading) {
+                if (isLoading) { //Radio buttons disabled while data is loading.
                     for (Toggle toggle : radioButtons.getToggles()) {
                         RadioButton radioButton = (RadioButton) toggle;
                         radioButton.setDisable(true);
@@ -368,7 +408,7 @@ public class WeatherDashController implements Initializable {
     }
 
     /**
-     * This listener makes the text field only accept numbers.
+     * This listener makes the text field only accept numbers and updates the day label to "day" if its a 1 day jump else to "days.
      */
     private void onlyNumbersMoreThanZero(TextField textField) {
         textField.textProperty().addListener(new ChangeListener<String>() {

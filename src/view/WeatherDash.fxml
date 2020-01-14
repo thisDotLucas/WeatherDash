@@ -81,7 +81,7 @@
                               <Insets bottom="16.0" left="15.0" top="10.0" />
                            </VBox.margin>
                         </Label>
-                        <ComboBox fx:id="showByComboBox" onAction="#comboBoxPickerAction" prefWidth="150.0" style="-fx-focus-color: transparent; -fx-faint-focus-color: transparent;">
+                        <ComboBox fx:id="showByComboBox" onAction="#showByComboBoxAction" prefWidth="150.0" style="-fx-focus-color: transparent; -fx-faint-focus-color: transparent;">
                            <VBox.margin>
                               <Insets left="15.0" />
                            </VBox.margin>
