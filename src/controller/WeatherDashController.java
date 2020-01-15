@@ -175,6 +175,7 @@ public class WeatherDashController implements Initializable {
         setCharAndJumpLimit(jumpTextField, 2, 31);
         onlyNumbersMoreThanZero(jumpTextField);
         disableMonthSettings(true);
+        showByComboBox.setPromptText("Select a option.");
         setMonthComboBoxItems();
 
         ToggleGroup radioButtons = new ToggleGroup();
